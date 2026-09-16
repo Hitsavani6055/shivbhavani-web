@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shivbhavani Safa Paghdi & Wedding Accessories</title>
+    <link rel="icon" href="{{ logo_url }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        softBg: '#FAF7F2',
+                        cardBg: '#FFFFFF',
+                        velvetWine: '#54121E',
+                        softWine: '#6B1B29',
+                        champagneGold: '#C5A059',
+                        softGold: '#E6D7B8',
+                        warmGoldText: '#946E28',
+                        deepCharcoal: '#262220',
+                        mutedText: '#665E59'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --live-primary: #54121E;
+            --live-accent: #C5A059;
+            --live-background: #FAF7F2;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        section[id] {
+            scroll-margin-top: 92px;
+        }
+
+        body {
+            position: relative;
+            background-color: var(--live-background) !important;
+            background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.42), transparent 42%),
+                radial-gradient(circle at 8% 14%, rgba(197, 160, 89, 0.12), transparent 24%),
+                radial-gradient(circle at 92% 68%, rgba(84, 18, 30, 0.06), transparent 28%);
+            background-size: 100% 100%, 180% 180%, 160% 160%;
+            animation: ambientDrift 22s ease-in-out infinite alternate;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.22;
+            background-image: radial-gradient(rgba(84, 18, 30, 0.14) 0.7px, transparent 0.7px);
+            background-size: 18px 18px;
+            mask-image: linear-gradient(to bottom, black, transparent 85%);
+        }
+
+        @keyframes ambientDrift {
+            0% {
+                background-position: 0 0, 0% 20%, 100% 60%;
+            }
+
+            100% {
+                background-position: 0 0, 100% 80%, 0% 30%;
+            }
+        }
+
+        @keyframes haloSpin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes splashLight {
+
+            0%,
+            100% {
+                transform: translateX(-10%) scale(1);
+                opacity: 0.22;
+            }
+
+            50% {
+                transform: translateX(10%) scale(1.12);
+                opacity: 0.42;
+            }
+        }
+
+        @keyframes textGlow {
+
+            0%,
+            100% {
+                text-shadow: 0 0 12px rgba(212, 175, 55, 0.12);
+            }
+
+            50% {
+                text-shadow: 0 0 24px rgba(212, 175, 55, 0.5);
+            }
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4));
+                transform: scale(0.96);
+            }
+
+            50% {
+                filter: drop-shadow(0 0 35px rgba(212, 175, 55, 0.8));
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes navDrop {
+            from {
+                opacity: 0;
+                transform: translateY(-18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes cardRise {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes goldSweep {
+            from {
+                transform: translateX(-130%);
+            }
+
+            to {
+                transform: translateX(220%);
+            }
+        }
+
+        @keyframes introCopy {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            animation: navDrop 0.8s 0.15s ease-out both;
+        }
+
+        .logo-intro-anim {
+            position: relative;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .logo-intro-anim::before,
+        .logo-intro-anim::after {
+            content: "";
+            position: absolute;
+            inset: -10px;
+            border: 1px solid rgba(212, 175, 55, 0.45);
+            border-radius: 9999px;
+            pointer-events: none;
+        }
+
+        .logo-intro-anim::before {
+            animation: haloSpin 12s linear infinite;
+            border-left-color: transparent;
+            border-right-color: transparent;
+        }
+
+        .logo-intro-anim::after {
+            inset: -18px;
+            border-color: rgba(212, 175, 55, 0.15);
+            animation: haloSpin 18s linear infinite reverse;
+        }
+
+        .logo-intro-frame {
+            width: 100%;
+            height: 100%;
+            border-radius: 9999px;
+            overflow: hidden;
+            border: 3px solid #d4af37;
+            background: #000;
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.22);
+        }
+
+        .logo-intro-frame img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            border-radius: inherit;
+        }
+
+        .splash-copy {
+            animation: introCopy 0.8s 0.35s ease-out both;
+        }
+
+        #splashScreen {
+            isolation: isolate;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 42%, rgba(111, 24, 38, 0.34), transparent 24%),
+                linear-gradient(135deg, #090707, #1f1110 52%, #080606);
+        }
+
+        #splashScreen::before,
+        #splashScreen::after {
+            content: "";
+            position: absolute;
+            width: 70vw;
+            height: 70vw;
+            max-width: 760px;
+            max-height: 760px;
+            border: 1px solid rgba(212, 175, 55, 0.16);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        #splashScreen::before {
+            animation: haloSpin 28s linear infinite;
+            transform: rotate(20deg);
+        }
+
+        #splashScreen::after {
+            width: 42vw;
+            height: 42vw;
+            animation: haloSpin 20s linear infinite reverse;
+            border-style: dashed;
+        }
+
+        #splashScreen .text-center::before {
+            content: "";
+            position: absolute;
+            inset: 20% 8%;
+            background: radial-gradient(ellipse, rgba(212, 175, 55, 0.2), transparent 66%);
+            filter: blur(18px);
+            animation: splashLight 5s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        #splashScreen .splash-copy:first-of-type {
+            animation: introCopy 0.8s 0.35s ease-out both, textGlow 3s 1.2s ease-in-out infinite;
+        }
+
+        .gold-sweep {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+        }
+
+        .gold-sweep::after {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 -35%;
+            width: 24%;
+            background: linear-gradient(90deg, transparent, rgba(255, 238, 177, 0.45), transparent);
+            transform: skewX(-18deg);
+            pointer-events: none;
+        }
+
+        .gold-sweep:hover::after {
+            animation: goldSweep 0.8s ease-out;
+        }
+
+        .modal-shell {
+            opacity: 0;
+            transform: translateY(16px) scale(0.98);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .modal-shell.modal-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .reveal-item {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal-item.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-item.revealed .media-card {
+            animation: cardRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .reveal-item.revealed .media-card:nth-child(2) {
+            animation-delay: 0.08s;
+        }
+
+        .reveal-item.revealed .media-card:nth-child(3) {
+            animation-delay: 0.16s;
+        }
+
+        .reveal-item.revealed .media-card:nth-child(4) {
+            animation-delay: 0.24s;
+        }
+
+        .reveal-item.revealed .media-card:nth-child(5) {
+            animation-delay: 0.32s;
+        }
+
+        .reveal-item.revealed .media-card:nth-child(6) {
+            animation-delay: 0.4s;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .reveal-item {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .reel-frame {
+            aspect-ratio: 9 / 16;
+        }
+
+        .royal-brand {
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .brand-badge {
+            width: 52px;
+            height: 52px;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #f5e6a8 0%, #d4b15d 35%, #b98d3b 100%);
+            padding: 2px;
+            box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.35), 0 10px 18px rgba(84, 18, 30, 0.12);
+            flex-shrink: 0;
+        }
+
+        .brand-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 9999px;
+            display: block;
+            border: 2px solid rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-title {
+            letter-spacing: 0.04em;
+            line-height: 1.05;
+            text-transform: none;
+        }
+
+        .brand-subtitle {
+            letter-spacing: 0.18em;
+        }
+
+        .bg-velvetWine {
+            background-color: var(--live-primary) !important;
+        }
+
+        .text-velvetWine {
+            color: var(--live-primary) !important;
+        }
+
+        .border-champagneGold\/30 {
+            border-color: color-mix(in srgb, var(--live-accent) 30%, transparent) !important;
+        }
+
+        .text-champagneGold {
+            color: var(--live-accent) !important;
+        }
+
+        .bg-champagneGold {
+            background-color: var(--live-accent) !important;
+        }
+
+        .media-card[data-featured="true"] {
+            border-color: rgba(197, 160, 89, 0.72);
+            box-shadow: 0 12px 32px rgba(84, 18, 30, 0.08);
+        }
+
+        #inquiryForm label,
+        #inquiryForm input,
+        #inquiryForm select,
+        #inquiryForm textarea {
+            color: #000000 !important;
+        }
+
+        #inquiry>div>div>p,
+        #inquiryForm label {
+            color: #000000 !important;
+        }
+
+        #inquiryForm input::placeholder,
+        #inquiryForm textarea::placeholder {
+            color: #000000 !important;
+            opacity: 1;
+        }
+
+        #inquiryForm select option {
+            color: #000000 !important;
+            background: #ffffff;
+        }
+
+        #inquiryForm input:focus,
+        #inquiryForm select:focus,
+        #inquiryForm textarea:focus {
+            border-color: var(--live-accent, #c5a059);
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.18);
+        }
+
+        @media (max-width: 640px) {
+            .royal-brand {
+                gap: 0.6rem;
+            }
+
+            .brand-badge {
+                width: 42px;
+                height: 42px;
+            }
+
+            .brand-title {
+                letter-spacing: 0.02em;
+            }
+
+            .brand-subtitle {
+                letter-spacing: 0.1em;
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-softBg text-deepCharcoal font-sans antialiased selection:bg-champagneGold selection:text-white overflow-x-hidden">
+
+    <!-- Royal Intro Splash -->
+    <div id="splashScreen"
+        class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="text-center px-4">
+            <div class="w-36 h-36 sm:w-44 sm:h-44 mx-auto mb-6 logo-intro-anim">
+                <div class="logo-intro-frame">
+                    <img src="{{ logo_url }}" alt="Shivbhavani royal logo">
+                </div>
+            </div>
+            <p class="splash-copy font-serif text-softGold text-sm sm:text-base tracking-widest uppercase">Welcome to
+                Shivbhavani
+                Safa Paghdi</p>
+            <span class="splash-copy inline-block mt-3 text-[11px] text-stone-400 font-sans tracking-wider">BHAVNAGAR •
+                SURAT</span>
+        </div>
+    </div>
+
+    <!-- Announcement Bar -->
+    <div
+        class="bg-velvetWine text-softGold text-xs py-2 px-4 text-center tracking-widest font-medium border-b border-champagneGold/20 flex flex-wrap justify-center items-center gap-4">
+        <span>👑 Shivbhavani Safa Paghdi • Bhavnagar & Surat</span>
+        <span>• Direct Contact: <strong>+91 99252 45246</strong></span>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-stone-200 shadow-xs">
+        <div class="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 py-3 flex justify-between items-center gap-3 sm:gap-4">
+            <a href="#" class="royal-brand group flex shrink-0">
+                <span class="brand-badge">
+                    <img src="{{ logo_url }}" alt="Shivbhavani Logo" class="group-hover:scale-105 transition-transform">
+                </span>
+                <div class="min-w-0">
+                    <span
+                        class="brand-title font-serif text-base sm:text-lg lg:text-2xl font-bold text-velvetWine block">
+                        Shivbhavani <span class="text-champagneGold italic font-normal">Safa Paghdi</span>
+                    </span>
+                    <span class="brand-subtitle text-[9px] sm:text-[10px] text-mutedText uppercase block mt-0.5">
+                        Wedding Accessories Palace
+                    </span>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-deepCharcoal">
+                <a href="#about" class="hover:text-champagneGold transition-colors">About Us</a>
+                <a href="#collection" class="hover:text-champagneGold transition-colors">Collections & Reels</a>
+                <a href="#branches" class="hover:text-champagneGold transition-colors">Branches</a>
+                <a href="#inquiry" class="hover:text-champagneGold transition-colors">Inquiries</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="https://instagram.com/shivbhavani_safa_bhavnagar" target="_blank"
+                    class="text-stone-600 hover:text-pink-600 text-lg transition" title="Visit Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://wa.me/919925245246?text=Hello,%20I%20would%20like%20to%20inquire%20about%20Safa%20and%20Paghdi%20pricing."
+                    target="_blank"
+                    class="bg-velvetWine hover:bg-softWine text-softGold font-medium px-4 py-2 rounded-full text-xs sm:text-sm inline-flex items-center gap-2 border border-champagneGold/30 shadow-xs transition">
+                    <i class="fab fa-whatsapp text-sm text-green-400"></i>
+                    <span>99 25 245 246</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section
+        class="relative py-16 lg:py-24 px-4 overflow-hidden text-center bg-gradient-to-b from-amber-50/50 via-softBg to-softBg reveal-item">
+        <div class="max-w-4xl mx-auto">
+            <span
+                class="inline-flex items-center gap-2 bg-softGold/40 text-warmGoldText border border-champagneGold/30 text-xs uppercase px-3.5 py-1.5 rounded-full font-semibold mb-6 tracking-widest">
+                <i class="fas fa-crown text-[10px]"></i> Traditional • Royal • Premium
+            </span>
+            <h1 class="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-velvetWine leading-[1.2] mb-6">
+                Royal Elegance. <br class="hidden sm:inline">
+                <span class="italic font-normal text-champagneGold">Authentic Heritage.</span>
+            </h1>
+            <p class="text-mutedText text-sm sm:text-base lg:text-lg max-w-2xl mx-auto mb-8 font-light">
+                Bhavnagar's premier destination for custom wedding turbans and royal groom accessories.
+            </p>
+            <div class="flex flex-wrap justify-center items-center gap-4">
+                <a href="#inquiry"
+                    class="gold-sweep bg-velvetWine hover:bg-softWine text-white px-7 py-3 rounded-xl font-medium text-sm shadow transition">
+                    Request Pricing & Quotes
+                </a>
+                <a href="#collection"
+                    class="gold-sweep bg-white hover:bg-stone-50 text-deepCharcoal border border-stone-300 px-7 py-3 rounded-xl font-medium text-sm shadow-xs transition">
+                    Watch Video Reels & Photos
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dynamic Collection & Reels Gallery -->
+    <section id="collection" data-aos="fade-up" data-aos-duration="850"
+        class="py-16 bg-white px-4 border-y border-stone-200 reveal-item">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center max-w-xl mx-auto mb-10">
+                <span class="text-xs font-bold uppercase tracking-widest text-warmGoldText block mb-1">Exclusive
+                    Showcase</span>
+                <h2 class="font-serif text-3xl font-bold text-velvetWine">Our Royal Collection</h2>
+                <p class="text-mutedText text-xs sm:text-sm mt-1.5">Genuine showroom video reels and catalog photographs
+                </p>
+
+                <!-- Filter Tabs -->
+                <div class="flex justify-center gap-2 mt-6">
+                    <button onclick="filterMedia('all', event)"
+                        class="filter-btn active bg-velvetWine text-white text-xs px-4 py-1.5 rounded-full font-medium transition"
+                        data-filter="all">All</button>
+                    <button onclick="filterMedia('video', event)"
+                        class="filter-btn bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-4 py-1.5 rounded-full font-medium transition"
+                        data-filter="video">Video Reels</button>
+                    <button onclick="filterMedia('image', event)"
+                        class="filter-btn bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-4 py-1.5 rounded-full font-medium transition"
+                        data-filter="image">Photos</button>
+                </div>
+            </div>
+
+            <!-- Dynamic Media Grid -->
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="mediaGrid">
+                {% for item in items %}
+                <div data-aos="zoom-in" data-aos-duration="650"
+                    class="media-card bg-softBg rounded-2xl overflow-hidden border border-stone-200 hover:border-champagneGold/60 hover:shadow-md transition-all flex flex-col justify-between"
+                    data-type="{{ item.type }}" data-title="{{ item.title }}" data-category="{{ item.category }}"
+                    data-url="{{ item.url }}" data-badge="{{ item.badge|default('Royal Look') }}"
+                    data-featured="{{ item.featured|default(false)|lower }}" onclick="openDetailModal(this)">
+
+                    <div class="relative bg-stone-900 overflow-hidden flex items-center justify-center">
+                        {% if item.type == 'video' %}
+                        <div class="reel-frame w-full overflow-hidden bg-black">
+                            <video src="{{ item.url }}" controls playsinline preload="metadata"
+                                class="w-full h-full object-cover bg-black"></video>
+                        </div>
+                        <span
+                            class="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] px-2.5 py-1 rounded-full font-medium flex items-center gap-1">
+                            <i class="fas fa-play text-[8px] text-champagneGold"></i> Reel
+                        </span>
+                        {% else %}
+                        <!-- Image Display -->
+                        <img src="{{ item.url }}" alt="{{ item.title }}"
+                            class="w-full h-80 object-cover hover:scale-105 transition-transform duration-500">
+                        <span
+                            class="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] px-2.5 py-1 rounded-full font-medium flex items-center gap-1">
+                            <i class="fas fa-camera text-[8px] text-champagneGold"></i> Photo
+                        </span>
+                        {% endif %}
+                        <span
+                            class="absolute bottom-3 left-3 bg-velvetWine/90 text-softGold text-[10px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wider">
+                            {{ item.category }}
+                        </span>
+                        {% if item.featured %}
+                        <span
+                            class="absolute top-3 left-3 bg-champagneGold text-deepCharcoal text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Featured</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="p-4 bg-white">
+                        <h4 class="font-serif font-bold text-base text-deepCharcoal">{{ item.title }}</h4>
+                        {% if item.description %}
+                        <p class="text-xs text-mutedText mt-1 line-clamp-2">{{ item.description }}</p>
+                        {% endif %}
+                        <div class="mt-3 flex justify-between items-center pt-2 border-t border-stone-100">
+                            <span class="text-[11px] text-stone-500 font-medium">Rent & Sale</span>
+                            <a href="#inquiry" onclick="event.stopPropagation()"
+                                class="text-xs font-semibold text-velvetWine hover:text-champagneGold transition">Inquire
+                                Now &rarr;</a>
+                        </div>
+                    </div>
+
+                </div>
+                {% endfor %}
+                {% if not items %}
+                <div
+                    class="sm:col-span-2 lg:col-span-3 rounded-2xl border border-dashed border-champagneGold/50 bg-softBg px-6 py-12 text-center">
+                    <i class="fas fa-images text-3xl text-champagneGold mb-3"></i>
+                    <h3 class="font-serif text-xl font-bold text-velvetWine">Our new collection is arriving soon</h3>
+                    <p class="text-sm text-mutedText mt-2">Please check back shortly for fresh showroom photos and video
+                        reels.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Full-screen media detail modal -->
+    <div id="detailModal"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div
+            class="modal-shell bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-champagneGold/30 relative flex flex-col max-h-[90vh]">
+            <button onclick="closeDetailModal()" aria-label="Close details"
+                class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center transition">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+            <div id="modalMediaBox"
+                class="w-full bg-black flex items-center justify-center max-h-[60vh] overflow-hidden"></div>
+            <div class="p-6 bg-white">
+                <div class="flex items-center gap-2 mb-2">
+                    <span id="modalCategory"
+                        class="text-[10px] uppercase font-bold tracking-widest bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded">Category</span>
+                    <span id="modalBadge"
+                        class="text-[10px] uppercase font-bold tracking-widest bg-velvetWine text-softGold px-2.5 py-0.5 rounded">Royal
+                        Look</span>
+                </div>
+                <h3 id="modalTitle" class="font-serif text-2xl font-bold text-deepCharcoal mb-2">Item Title</h3>
+                <p class="text-stone-500 text-xs leading-relaxed">Handcrafted with authentic royal finishing. Available
+                    for rental and purchase. Connect directly for color options, fabric inquiries, and custom sizing.
+                </p>
+                <div class="mt-6 pt-4 border-t border-stone-100 flex gap-3">
+                    <button id="modalWhatsAppBtn"
+                        class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition shadow">
+                        <i class="fab fa-whatsapp text-base"></i> Inquire on WhatsApp
+                    </button>
+                    <button onclick="closeDetailModal()"
+                        class="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 rounded-xl text-xs font-semibold">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inquiry Form -->
+    <section id="inquiry" data-aos="fade-up" data-aos-duration="850" class="py-16 px-4 max-w-3xl mx-auto reveal-item">
+        <div class="bg-white rounded-3xl shadow-sm border border-champagneGold/30 p-8 sm:p-10">
+            <div class="text-center mb-8">
+                <span class="text-xs font-bold uppercase tracking-widest text-warmGoldText block mb-1">Pricing &
+                    Availability</span>
+                <h3 class="font-serif text-2xl sm:text-3xl font-bold text-velvetWine">Inquire for Pricing</h3>
+                <p class="text-mutedText text-xs sm:text-sm mt-1">Submit your event requirements or connect on WhatsApp
+                    for matching recommendations.</p>
+            </div>
+
+            <form id="inquiryForm" class="space-y-4">
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-deepCharcoal mb-1">Full Name *</label>
+                        <input type="text" id="custName" name="name" required placeholder="e.g. Ramesh Patel"
+                            class="w-full bg-softBg border border-stone-200 rounded-xl p-3 text-sm focus:border-champagneGold outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-deepCharcoal mb-1">Mobile Number *</label>
+                        <input type="tel" id="custPhone" name="phone" required placeholder="9925245246"
+                            class="w-full bg-softBg border border-stone-200 rounded-xl p-3 text-sm focus:border-champagneGold outline-none">
+                    </div>
+                </div>
+
+                <div class="grid sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-deepCharcoal mb-1">Preferred Branch *</label>
+                        <select id="custBranch" name="branch"
+                            class="w-full bg-softBg border border-stone-200 rounded-xl p-3 text-sm focus:border-champagneGold outline-none">
+                            <option value="Bhavnagar (Main Branch)">Bhavnagar (Main Branch)</option>
+                            <option value="Surat Branch 1 (Katargam)">Surat 1 (Katargam)</option>
+                            <option value="Surat Branch 2">Surat Branch 2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-deepCharcoal mb-1">Event Date</label>
+                        <input type="date" id="custDate" name="event_date"
+                            class="w-full bg-softBg border border-stone-200 rounded-xl p-3 text-sm focus:border-champagneGold outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-deepCharcoal mb-1">Items Needed *</label>
+                        <select id="custService" name="service_type"
+                            class="w-full bg-softBg border border-stone-200 rounded-xl p-3 text-sm focus:border-champagneGold outline-none">
+                            <option value="Safa / Paghdi">Safa / Paghdi</option>
+                            <option value="Jodhpuri / Achkan">Jodhpuri / Achkan</option>
+                            <option value="Indo-Western">Indo-Western</option>
+                            <option value="Talwar / Accessories">Talwar / Accessories</option>
+                            <option value="Bulk Baraati Safa">Baraati Bulk Safas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-deepCharcoal mb-1">Estimated Count & Special
+                        Notes</label>
+                    <textarea id="custNote" name="note" rows="2"
+                        placeholder="Mention estimated number of pieces, venue, or sherwani color..."
+                        class="w-full bg-softBg border border-stone-200 rounded-xl p-3 text-sm focus:border-champagneGold outline-none"></textarea>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button type="submit"
+                        class="flex-1 bg-velvetWine hover:bg-softWine text-white font-medium py-3.5 rounded-xl shadow transition">
+                        Submit Inquiry
+                    </button>
+                    <button type="button" onclick="sendDirectWhatsApp()"
+                        class="bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-3.5 px-6 rounded-xl shadow flex items-center justify-center gap-2 transition">
+                        <i class="fab fa-whatsapp text-lg"></i> Inquire on WhatsApp
+                    </button>
+                </div>
+
+                <div id="formMsg"
+                    class="hidden text-center text-xs sm:text-sm font-medium p-3 rounded-xl bg-green-50 text-green-900 border border-green-200 mt-3">
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- About Us -->
+    <section id="about" data-aos="fade-up" data-aos-duration="850" class="py-16 px-4 max-w-6xl mx-auto reveal-item">
+        <div class="grid md:grid-cols-2 gap-10 items-center">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-warmGoldText mb-2 block">Our
+                    Tradition</span>
+                <h2 class="font-serif text-3xl font-bold text-velvetWine mb-4">About Shivbhavani</h2>
+                <p class="text-mutedText leading-relaxed mb-6 text-sm sm:text-base">
+                    Established in 2016 in Bhavnagar, <strong>Shivbhavani Safa Paghdi and Wedding Accessories
+                        Palace</strong> brings regal charm and heritage craftsmanship to your most memorable
+                    celebrations.
+                    We specialize in handcrafted groom turbans, matching baraati styling, and luxury ceremonial accents
+                    designed for a flawless royal fit.
+                </p>
+                <h3 class="font-serif text-xl font-bold text-velvetWine mb-3">What We Offer</h3>
+                <div class="space-y-2 text-xs sm:text-sm text-mutedText">
+                    <p><strong class="text-deepCharcoal">Royal Safas & Paghdis:</strong> Jodhpuri, Rajasthani, Rajputi,
+                        and classic Gujarati styles in rich, breathable fabrics.</p>
+                    <p><strong class="text-deepCharcoal">Groom Accessories:</strong> Statement kalgis, royal malas,
+                        ceremonial swords, dupattas, and stoles.</p>
+                    <p><strong class="text-deepCharcoal">Barati Styling:</strong> Bulk color-coordinated safa packages
+                        with expert on-site tying services.</p>
+                    <p><strong class="text-deepCharcoal">Buy or Rent:</strong> Flexible purchase options and rental
+                        packages to suit every budget.</p>
+                </div>
+            </div>
+            <div
+                class="relative overflow-hidden rounded-3xl border border-champagneGold/30 bg-gradient-to-br from-velvetWine via-softWine to-deepCharcoal p-8 text-center text-white shadow-lg">
+                <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full border border-champagneGold/30"></div>
+                <div class="absolute -left-12 -bottom-20 h-44 w-44 rounded-full border border-softGold/20"></div>
+                <div class="relative">
+                    <div
+                        class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-champagneGold/50">
+                        <i class="fas fa-crown text-2xl text-softGold"></i>
+                    </div>
+                    <h3 class="font-serif text-2xl font-bold text-softGold mb-2">Why Choose Us</h3>
+                    <div class="text-white/75 text-xs sm:text-sm leading-relaxed text-left space-y-2">
+                        <p><strong class="text-softGold">Master Tying & Fit:</strong> All-day comfort with precise
+                            draping techniques.</p>
+                        <p><strong class="text-softGold">Custom Coordination:</strong> Matched to your wedding theme and
+                            bridal attire.</p>
+                        <p><strong class="text-softGold">Complete Packages:</strong> Full styling solutions for the
+                            groom and wedding party.</p>
+                    </div>
+                    <div class="mt-5 pt-4 border-t border-white/15 text-left text-xs text-white/75">
+                        <p class="font-bold text-softGold mb-1">Visit Us</p>
+                        <p>105, Avadh Residency, Dairy Road, Jewel Circle, Opp. Joggers Park, Bhavnagar Para, Bhavnagar
+                            - 364003, Gujarat</p>
+                        <p class="mt-2"><i class="fas fa-phone text-champagneGold mr-1"></i> +91 99252 45246</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Branch Locations Section -->
+    <section id="branches" data-aos="fade-up" data-aos-duration="850" class="py-16 px-4 max-w-6xl mx-auto reveal-item">
+        <div class="text-center max-w-xl mx-auto mb-10">
+            <span class="text-xs font-bold uppercase tracking-widest text-warmGoldText block mb-1">Store
+                Locations</span>
+            <h2 class="font-serif text-3xl font-bold text-velvetWine">Our Showroom Branches</h2>
+            <p class="text-mutedText text-xs sm:text-sm mt-1">Visit our showrooms across Bhavnagar and Surat</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div
+                class="bg-white rounded-2xl border-2 border-champagneGold/50 p-6 flex flex-col justify-between shadow-xs">
+                <div>
+                    <span
+                        class="bg-velvetWine text-softGold text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">Main
+                        Branch</span>
+                    <h3 class="font-serif text-lg font-bold text-deepCharcoal mb-2">Bhavnagar Showroom</h3>
+                    <p class="text-xs text-mutedText leading-relaxed mb-4">105, 1st Floor, Avadh Residency, Dairy Road,
+                        Opposite Joggers Park, Near Jewels Circle, Bhavnagar - 364003.</p>
+                    <p class="text-xs text-stone-700 font-semibold mb-1"><i
+                            class="fas fa-phone text-champagneGold mr-1"></i> +91 99252 45246</p>
+                </div>
+                <div class="pt-4 border-t border-stone-100 mt-2">
+                    <a href="https://maps.app.goo.gl/TW7m9pV6SfXSb8EK7" target="_blank"
+                        class="w-full bg-softBg hover:bg-stone-100 text-deepCharcoal font-semibold py-2 px-4 rounded-lg text-xs flex items-center justify-center gap-2 border border-stone-300 transition"><i
+                            class="fas fa-location-dot text-velvetWine"></i> Open in Google Maps</a>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-stone-200 p-6 flex flex-col justify-between shadow-xs">
+                <div>
+                    <span
+                        class="bg-stone-100 text-stone-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">Surat
+                        Branch 1</span>
+                    <h3 class="font-serif text-lg font-bold text-deepCharcoal mb-2">Katargam Showroom</h3>
+                    <p class="text-xs text-mutedText leading-relaxed mb-4">Shivbhavani Safa Paghdi,<br>Singanpore -
+                        Katargam Road, Surat, Gujarat.</p>
+                    <p class="text-xs text-stone-700 font-semibold mb-1"><i
+                            class="fas fa-phone text-champagneGold mr-1"></i> +91 99252 45246</p>
+                </div>
+                <div class="pt-4 border-t border-stone-100 mt-2">
+                    <a href="https://maps.app.goo.gl/qMSWb8LgSerAHYBZ9" target="_blank"
+                        class="w-full bg-softBg hover:bg-stone-100 text-deepCharcoal font-semibold py-2 px-4 rounded-lg text-xs flex items-center justify-center gap-2 border border-stone-300 transition"><i
+                            class="fas fa-location-dot text-velvetWine"></i> Open in Google Maps</a>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-stone-200 p-6 flex flex-col justify-between shadow-xs">
+                <div>
+                    <span
+                        class="bg-stone-100 text-stone-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">Surat
+                        Branch 2</span>
+                    <h3 class="font-serif text-lg font-bold text-deepCharcoal mb-2">Surat City Showroom</h3>
+                    <p class="text-xs text-mutedText leading-relaxed mb-4">Shivbhavani Safa Paghdi,<br>Surat, Gujarat.
+                    </p>
+                    <p class="text-xs text-stone-700 font-semibold mb-1"><i
+                            class="fas fa-phone text-champagneGold mr-1"></i> +91 99252 45246</p>
+                </div>
+                <div class="pt-4 border-t border-stone-100 mt-2">
+                    <a href="https://maps.app.goo.gl/7BYeShuYdv6geUo69?g_st=ac" target="_blank"
+                        class="w-full bg-softBg hover:bg-stone-100 text-deepCharcoal font-semibold py-2 px-4 rounded-lg text-xs flex items-center justify-center gap-2 border border-stone-300 transition"><i
+                            class="fas fa-location-dot text-velvetWine"></i> Open in Google Maps</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-400 py-10 text-xs border-t border-stone-800">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <div class="flex justify-center mb-3">
+                <img src="{{ logo_url }}" alt="Shivbhavani Logo"
+                    class="w-16 h-16 rounded-full border-2 border-champagneGold/60 shadow-md object-cover overflow-hidden">
+            </div>
+            <h4 class="font-serif text-lg text-softGold font-bold mb-2">Shivbhavani Safa Paghdi & Wedding Accessories
+                Palace</h4>
+            <p class="text-stone-400 max-w-lg mx-auto mb-4 text-[11px] leading-relaxed">
+                Specialized in bridal and royal groom couture, custom turbans, and on-venue safa services in Bhavnagar
+                and Surat.
+            </p>
+            <div class="flex justify-center gap-4 mb-6">
+                <a href="https://instagram.com/shivbhavani_safa_bhavnagar" target="_blank"
+                    class="text-stone-400 hover:text-pink-400 text-base">
+                    <i class="fab fa-instagram"></i> @shivbhavani_safa_bhavnagar
+                </a>
+                <a href="/admin" class="text-stone-500 hover:text-stone-300 text-xs flex items-center gap-1">
+                    <i class="fas fa-lock text-[10px]"></i> Admin Portal
+                </a>
+            </div>
+            <div class="pt-6 border-t border-stone-800 flex flex-col sm:flex-row justify-between items-center gap-2">
+                <p>&copy; 2026 Shivbhavani Safa Paghdi. All rights reserved.</p>
+                <p class="text-stone-300">
+                    Designed & Developed by <span class="text-champagneGold font-semibold">Hit Savani</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Handlers -->
+    <script>
+        const BUSINESS_PHONE = "919925245246"; // Official showroom phone number
+
+        window.addEventListener('load', () => {
+            const splash = document.getElementById('splashScreen');
+            if (window.location.hash) {
+                history.replaceState(null, document.title, window.location.pathname + window.location.search);
+                window.scrollTo(0, 0);
+            }
+            if (sessionStorage.getItem('shivbhavani_intro_seen') === 'true') {
+                splash.style.display = 'none';
+                return;
+            }
+            setTimeout(() => {
+                if (splash) {
+                    splash.style.opacity = '0';
+                    sessionStorage.setItem('shivbhavani_intro_seen', 'true');
+                    setTimeout(() => splash.style.display = 'none', 700);
+                }
+            }, 1800);
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('revealed');
+            });
+        }, { threshold: 0.12 });
+
+        document.querySelectorAll('.reveal-item').forEach(element => observer.observe(element));
+
+        // Media Filtering (All, Video Reels, Photos)
+        function filterMedia(type, clickEvent) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-velvetWine', 'text-white');
+                btn.classList.add('bg-stone-100', 'text-stone-700');
+            });
+            clickEvent.currentTarget.classList.remove('bg-stone-100', 'text-stone-700');
+            clickEvent.currentTarget.classList.add('bg-velvetWine', 'text-white');
+
+            const cards = document.querySelectorAll('.media-card');
+            cards.forEach(card => {
+                if (type === 'all' || card.getAttribute('data-type') === type) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function openDetailModal(card) {
+            const title = card.dataset.title;
+            const category = card.dataset.category;
+            const type = card.dataset.type;
+            const url = card.dataset.url;
+            const badge = card.dataset.badge;
+            const modal = document.getElementById('detailModal');
+            const mediaBox = document.getElementById('modalMediaBox');
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalCategory').innerText = category;
+            document.getElementById('modalBadge').innerText = badge || 'Royal Look';
+
+            if (type === 'video') {
+                mediaBox.innerHTML = `<video src="${url}" controls autoplay playsinline class="w-full max-h-[55vh] object-contain bg-black"></video>`;
+            } else {
+                mediaBox.innerHTML = `<img src="${url}" alt="${title}" class="w-full max-h-[55vh] object-contain bg-black">`;
+            }
+
+            document.getElementById('modalWhatsAppBtn').onclick = () => {
+                const text = `*Shivbhavani Safa Paghdi Inquiry*%0A` +
+                    `Product: ${encodeURIComponent(title)}%0A` +
+                    `Category: ${encodeURIComponent(category)}%0A` +
+                    `Hello, I would like to inquire about pricing and availability for this item.`;
+                window.open(`https://wa.me/${BUSINESS_PHONE}?text=${text}`, '_blank');
+            };
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => modal.querySelector('.modal-shell').classList.add('modal-visible'));
+        }
+
+        function closeDetailModal() {
+            const modal = document.getElementById('detailModal');
+            modal.querySelector('.modal-shell').classList.remove('modal-visible');
+            setTimeout(() => {
+                document.getElementById('modalMediaBox').innerHTML = '';
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        document.getElementById('detailModal').addEventListener('click', (event) => {
+            if (event.target.id === 'detailModal') closeDetailModal();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeDetailModal();
+        });
+
+        // Inquiry Submission
+        const form = document.getElementById('inquiryForm');
+        const msg = document.getElementById('formMsg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('/api/inquiry', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    msg.classList.remove('hidden');
+                    msg.innerHTML = `Thank you! Your inquiry has been submitted. Our team will contact you shortly.`;
+                    form.reset();
+                }
+            } catch (err) {
+                alert("Submission failed. Please connect directly via WhatsApp.");
+            }
+        });
+
+        // Direct WhatsApp Message Composer
+        function sendDirectWhatsApp() {
+            const name = document.getElementById('custName').value || "Customer";
+            const branch = document.getElementById('custBranch').value;
+            const service = document.getElementById('custService').value;
+            const date = document.getElementById('custDate').value || "Not decided";
+            const note = document.getElementById('custNote').value;
+
+            const text = `*Shivbhavani Safa Paghdi Inquiry*%0A` +
+                `• Branch: ${encodeURIComponent(branch)}%0A` +
+                `• Customer: ${encodeURIComponent(name)}%0A` +
+                `• Service / Product: ${encodeURIComponent(service)}%0A` +
+                `• Event Date: ${encodeURIComponent(date)}%0A` +
+                `• Notes: ${encodeURIComponent(note || 'None')}`;
+
+            window.open(`https://wa.me/${BUSINESS_PHONE}?text=${text}`, '_blank');
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({ duration: 800, once: true, offset: 90, easing: 'ease-out-cubic' });
+            }
+        });
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof AOS !== 'undefined') AOS.refresh();
+            }, 1900);
+        });
+    </script>
+</body>
+
+</html>

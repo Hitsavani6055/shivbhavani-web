@@ -1,0 +1,58 @@
+[
+    {
+        "id": "item_1789560437",
+        "title": "talwar",
+        "category": "Talwar & Accessories",
+        "type": "image",
+        "url": "/static/uploads/1789560437_1_ph.jpeg",
+        "badge": "Royal Look"
+    },
+    {
+        "id": "item_1",
+        "title": "Handcrafted Silver Talwar & Katar",
+        "category": "Talwar & Accessories",
+        "type": "image",
+        "url": "/static/uploads/silver_talwar.jpg",
+        "badge": "Royal Armor"
+    },
+    {
+        "id": "item_2",
+        "title": "Ivory Embroidered Indo-Western Set",
+        "category": "Indo-Western",
+        "type": "video",
+        "url": "/static/uploads/indo_western.mp4",
+        "badge": "Reel Showcase"
+    },
+    {
+        "id": "item_3",
+        "title": "Maroon Velvet Embroidered Jodhpuri",
+        "category": "Jodhpuri",
+        "type": "video",
+        "url": "/static/uploads/maroon_jodhpuri.mp4",
+        "badge": "Groom's Choice"
+    },
+    {
+        "id": "item_4",
+        "title": "Royal Horse Embroidered Jodhpuri Suit",
+        "category": "Jodhpuri",
+        "type": "video",
+        "url": "/static/uploads/horse_jodhpuri.mp4",
+        "badge": "Signature"
+    },
+    {
+        "id": "item_5",
+        "title": "Rajwadi Achkan with Embroidered Kamarbandh",
+        "category": "Achkan",
+        "type": "video",
+        "url": "/static/uploads/rajwadi_achkan.mp4",
+        "badge": "Heritage"
+    },
+    {
+        "id": "item_6",
+        "title": "Traditional Mint & Gold Angarkha",
+        "category": "Angarkha",
+        "type": "image",
+        "url": "/static/uploads/royal_angarkha.jpg",
+        "badge": "Classic"
+    }
+]

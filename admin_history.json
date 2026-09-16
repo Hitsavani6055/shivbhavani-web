@@ -1,0 +1,47 @@
+[
+    {
+        "id": "hist_1789582956_4",
+        "action": "login",
+        "item_title": "",
+        "item_type": "",
+        "admin": "admin",
+        "details": "Admin logged in successfully",
+        "timestamp": "16-09-2026 11:52 PM"
+    },
+    {
+        "id": "hist_1789581877_3",
+        "action": "login",
+        "item_title": "",
+        "item_type": "",
+        "admin": "admin",
+        "details": "Admin logged in successfully",
+        "timestamp": "16-09-2026 11:34 PM"
+    },
+    {
+        "id": "hist_1789578660_2",
+        "action": "logo update",
+        "item_title": "Site logo",
+        "item_type": "image",
+        "admin": "admin",
+        "details": "Replaced /static/logo.svg",
+        "timestamp": "16-09-2026 10:41 PM"
+    },
+    {
+        "id": "hist_1789578501_1",
+        "action": "login",
+        "item_title": "",
+        "item_type": "",
+        "admin": "admin",
+        "details": "Admin logged in successfully",
+        "timestamp": "16-09-2026 10:38 PM"
+    },
+    {
+        "id": "hist_1789578147_0",
+        "action": "login",
+        "item_title": "",
+        "item_type": "",
+        "admin": "admin",
+        "details": "Admin logged in successfully",
+        "timestamp": "16-09-2026 10:32 PM"
+    }
+]

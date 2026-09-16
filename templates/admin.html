@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Shivbhavani Safa Paghdi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-stone-100 text-stone-800 font-sans min-h-screen">
+
+    <!-- Admin Header -->
+    <header class="bg-stone-900 text-white py-4 px-6 flex justify-between items-center shadow">
+        <div class="flex items-center gap-3">
+            <h1 class="font-bold text-lg text-amber-400">Shivbhavani Admin Portal</h1>
+            <span class="text-xs bg-stone-800 text-stone-400 px-2.5 py-1 rounded">Developer: Hit Savani</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/" class="text-xs bg-stone-800 hover:bg-stone-700 text-stone-200 px-3 py-1.5 rounded transition">
+                <i class="fas fa-eye mr-1"></i> View Live Website
+            </a>
+            {% if is_authenticated %}
+            <form action="/admin/logout" method="POST">
+                <button type="submit"
+                    class="text-xs bg-red-700 hover:bg-red-600 text-white px-3 py-1.5 rounded transition">
+                    <i class="fas fa-right-from-bracket mr-1"></i> Logout
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </header>
+
+    {% if not is_authenticated %}
+    <!-- Admin Login -->
+    <div class="max-w-md mx-auto mt-20 p-8 bg-white rounded-2xl shadow-sm border">
+        <div class="text-center mb-6">
+            <i class="fas fa-lock text-4xl text-amber-500 mb-2"></i>
+            <h2 class="text-xl font-bold">Admin Login</h2>
+            <p class="text-xs text-stone-500 mt-1">Enter your password to manage media and view inquiries</p>
+        </div>
+        <form method="POST" action="/admin/login" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold mb-1">Password</label>
+                <input type="password" name="password" required placeholder="Default: admin123"
+                    class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+            </div>
+            <button type="submit"
+                class="w-full bg-stone-900 hover:bg-black text-amber-400 font-bold py-2.5 rounded-lg transition text-sm">
+                Log In
+            </button>
+        </form>
+    </div>
+
+    {% else %}
+    <!-- Admin Management Dashboard -->
+    <div class="max-w-6xl mx-auto py-8 px-4 grid lg:grid-cols-3 gap-8">
+
+        <!-- Left: Upload New Media -->
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-cloud-arrow-up text-amber-600"></i> Add New Media
+                </h3>
+
+                <form action="/api/admin/upload" method="POST" enctype="multipart/form-data" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Title *</label>
+                        <input type="text" name="title" required placeholder="e.g. Royal Maroon Velvet Jodhpuri"
+                            class="w-full border rounded-lg p-2 text-xs outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Type *</label>
+                            <select name="media_type" class="w-full border rounded-lg p-2 text-xs outline-none">
+                                <option value="video">Video Reel</option>
+                                <option value="image">Photo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Category *</label>
+                            <select name="category" class="w-full border rounded-lg p-2 text-xs outline-none">
+                                <option value="Safa & Paghdi">Safa & Paghdi</option>
+                                <option value="Jodhpuri">Jodhpuri</option>
+                                <option value="Achkan">Achkan</option>
+                                <option value="Indo-Western">Indo-Western</option>
+                                <option value="Angarkha">Angarkha</option>
+                                <option value="Talwar & Accessories">Talwar & Accessories</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Badge</label>
+                        <input type="text" name="badge" placeholder="e.g. Signature, Royal Look" value="Royal Look"
+                            class="w-full border rounded-lg p-2 text-xs outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Description</label>
+                        <textarea name="description" rows="2" placeholder="Short product description"
+                            class="w-full border rounded-lg p-2 text-xs outline-none"></textarea>
+                    </div>
+
+                    <label class="flex items-center gap-2 text-xs font-semibold">
+                        <input type="checkbox" name="featured" value="true" class="accent-amber-600">
+                        Feature this item on the website
+                    </label>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Select File (MP4 / JPG / PNG) *</label>
+                        <input type="file" name="file" required accept="video/*,image/*"
+                            class="w-full border rounded-lg p-1.5 text-xs bg-stone-50">
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg text-xs transition shadow mt-2">
+                        Upload to Website
+                    </button>
+                </form>
+            </div>
+
+            <!-- Live Design Controls -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-palette text-amber-600"></i> Live Website Design
+                </h3>
+                <p class="text-xs text-stone-500 mb-4">Change the core colors used by the public website.</p>
+                <form action="/api/admin/design" method="POST" class="space-y-3">
+                    <label class="flex items-center justify-between gap-3 text-xs font-semibold">
+                        Primary color
+                        <input type="color" name="primary_color" value="{{ design.primary_color }}"
+                            class="h-8 w-14 cursor-pointer rounded border">
+                    </label>
+                    <label class="flex items-center justify-between gap-3 text-xs font-semibold">
+                        Gold accent
+                        <input type="color" name="accent_color" value="{{ design.accent_color }}"
+                            class="h-8 w-14 cursor-pointer rounded border">
+                    </label>
+                    <label class="flex items-center justify-between gap-3 text-xs font-semibold">
+                        Background
+                        <input type="color" name="background_color" value="{{ design.background_color }}"
+                            class="h-8 w-14 cursor-pointer rounded border">
+                    </label>
+                    <button type="submit"
+                        class="w-full bg-stone-900 hover:bg-black text-amber-400 font-bold py-2.5 rounded-lg text-xs transition shadow">
+                        Apply Design Changes
+                    </button>
+                </form>
+            </div>
+
+            <!-- Site Logo -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-image text-amber-600"></i> Site Logo
+                </h3>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-16 h-16 rounded-full border bg-stone-50 flex items-center justify-center p-2">
+                        <img src="{{ logo_url }}" alt="Current site logo" class="max-w-full max-h-full object-contain">
+                    </div>
+                    <p class="text-xs text-stone-500">This logo appears in the website header, footer, and browser tab.
+                    </p>
+                </div>
+                <form action="/api/admin/upload-logo" method="POST" enctype="multipart/form-data" class="space-y-3">
+                    <input type="file" name="file" required accept="image/png,image/jpeg,image/webp"
+                        class="w-full border rounded-lg p-1.5 text-xs bg-stone-50">
+                    <button type="submit"
+                        class="w-full bg-stone-900 hover:bg-black text-amber-400 font-bold py-2.5 rounded-lg text-xs transition shadow">
+                        Upload New Logo
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right: Leads and Active Media -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <!-- Inquiries Table -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-3 pb-2 border-b flex justify-between items-center">
+                    <span><i class="fas fa-inbox text-amber-600 mr-1"></i> Received Inquiries ({{ inquiries|length
+                        }})</span>
+                </h3>
+
+                {% if inquiries %}
+                <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-stone-50 text-stone-500">
+                            <tr>
+                                <th class="p-2">Date</th>
+                                <th class="p-2">Name</th>
+                                <th class="p-2">Phone</th>
+                                <th class="p-2">Branch</th>
+                                <th class="p-2">Service</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            {% for inq in inquiries %}
+                            <tr class="hover:bg-amber-50/50">
+                                <td class="p-2 text-stone-400">{{ inq.submitted_at }}</td>
+                                <td class="p-2 font-semibold">{{ inq.name }}</td>
+                                <td class="p-2">
+                                    <a href="https://wa.me/91{{ inq.phone }}" target="_blank"
+                                        class="text-green-700 font-bold hover:underline">
+                                        {{ inq.phone }}
+                                    </a>
+                                </td>
+                                <td class="p-2">{{ inq.branch }}</td>
+                                <td class="p-2">{{ inq.service_type }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-xs text-stone-400 py-4 text-center">No customer inquiries submitted yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Admin Activity History -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-3 pb-2 border-b flex justify-between items-center">
+                    <span><i class="fas fa-clock-rotate-left text-amber-600 mr-1"></i> Admin Activity History ({{
+                        history|length }})</span>
+                </h3>
+
+                {% if history %}
+                <div class="overflow-x-auto max-h-72 overflow-y-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-stone-50 text-stone-500">
+                            <tr>
+                                <th class="p-2">Time</th>
+                                <th class="p-2">Action</th>
+                                <th class="p-2">Item</th>
+                                <th class="p-2">Type</th>
+                                <th class="p-2">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            {% for event in history %}
+                            <tr class="hover:bg-amber-50/50 align-top">
+                                <td class="p-2 text-stone-400 whitespace-nowrap">{{ event.timestamp }}</td>
+                                <td class="p-2 font-semibold text-stone-700 uppercase">{{ event.action }}</td>
+                                <td class="p-2">{{ event.item_title or '-' }}</td>
+                                <td class="p-2">{{ event.item_type or '-' }}</td>
+                                <td class="p-2 text-stone-600">{{ event.details or 'No details' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-xs text-stone-400 py-4 text-center">No admin activity has been recorded yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Active Media Items -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-3 pb-2 border-b">
+                    Active Catalog Items ({{ items|length }})
+                </h3>
+
+                <div class="grid sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto">
+                    {% for item in items %}
+                    <div class="flex items-center justify-between p-2.5 rounded-xl border bg-stone-50 text-xs">
+                        <div>
+                            <span
+                                class="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold uppercase">{{
+                                item.type }}</span>
+                            <h5 class="font-bold text-stone-800 mt-1">{{ item.title }}</h5>
+                            <span class="text-[11px] text-stone-500">{{ item.category }}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button type="button" onclick="toggleEdit('{{ item.id }}')"
+                                class="text-amber-700 hover:text-amber-900 p-2" title="Edit item">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <form action="/api/admin/delete-item" method="POST"
+                                onsubmit="return confirm('Are you sure you want to remove this item?')">
+                                <input type="hidden" name="item_id" value="{{ item.id }}">
+                                <button type="submit" class="text-red-500 hover:text-red-700 p-2" title="Delete item">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <form id="edit-{{ item.id }}" action="/api/admin/update-item" method="POST"
+                        class="hidden col-span-full border-t pt-3 space-y-2">
+                        <input type="hidden" name="item_id" value="{{ item.id }}">
+                        <input name="title" value="{{ item.title }}" required
+                            class="w-full border rounded-lg p-2 text-xs">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input name="category" value="{{ item.category }}" required
+                                class="border rounded-lg p-2 text-xs">
+                            <input name="badge" value="{{ item.badge|default('Royal Look') }}"
+                                class="border rounded-lg p-2 text-xs">
+                        </div>
+                        <textarea name="description" rows="2"
+                            class="w-full border rounded-lg p-2 text-xs">{{ item.description|default('') }}</textarea>
+                        <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="featured"
+                                value="true" {% if item.featured %}checked{% endif %} class="accent-amber-600"> Featured
+                            item</label>
+                        <button class="bg-amber-600 text-white rounded-lg py-2 text-xs font-bold">Save Changes</button>
+                    </form>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    {% endif %}
+
+</body>
+
+<script>
+    function toggleEdit(itemId) {
+        document.getElementById(`edit-${itemId}`).classList.toggle('hidden');
+    }
+</script>
+
+</html>

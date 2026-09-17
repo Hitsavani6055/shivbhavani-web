@@ -283,6 +283,144 @@
             animation: introCopy 0.8s 0.35s ease-out both, textGlow 3s 1.2s ease-in-out infinite;
         }
 
+        .cinematic-splash {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .cinematic-splash .ambient-glow {
+            position: absolute;
+            width: min(78vw, 620px);
+            height: min(78vw, 620px);
+            left: 50%;
+            top: 46%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(212, 175, 55, .28), transparent 68%);
+            filter: blur(32px);
+            animation: splashLight 4s ease-in-out infinite;
+        }
+
+        .dupatta-wave {
+            position: absolute;
+            width: min(42vw, 520px);
+            height: 115vh;
+            top: -8vh;
+            left: -58vw;
+            opacity: .9;
+            filter: drop-shadow(0 20px 28px rgba(0, 0, 0, .8));
+            animation: silkWaveGlide 4.2s cubic-bezier(.22, 1, .36, 1) forwards;
+        }
+
+        @keyframes silkWaveGlide {
+            0% {
+                left: -58vw;
+                transform: rotate(-18deg) scale(.82);
+            }
+
+            48% {
+                left: 12vw;
+                transform: rotate(5deg) scale(1.02);
+            }
+
+            100% {
+                left: 112vw;
+                transform: rotate(15deg) scale(1.08);
+            }
+        }
+
+        .final-flash {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(255, 235, 170, .85), rgba(212, 175, 55, .2) 45%, transparent 78%);
+            opacity: 0;
+            pointer-events: none;
+            animation: goldFlash .8s ease 3.8s forwards;
+        }
+
+        @keyframes goldFlash {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            45% {
+                opacity: .8;
+            }
+        }
+
+        .cinematic-brand {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            opacity: 0;
+            transform: scale(.84) translateY(20px);
+            animation: cinematicBrandReveal 1.3s cubic-bezier(.16, 1, .3, 1) 1.15s forwards;
+        }
+
+        @keyframes cinematicBrandReveal {
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .cinematic-logo {
+            width: clamp(168px, 34vw, 228px);
+            height: clamp(168px, 34vw, 228px);
+            padding: 8px;
+            margin-bottom: 18px;
+            border-radius: 28px;
+            background: radial-gradient(circle, #201a0e, #000 85%);
+            border: 2px solid rgba(212, 175, 55, .72);
+            box-shadow: 0 0 42px rgba(212, 175, 55, .42), 0 20px 40px rgba(0, 0, 0, .85);
+            animation: pulseGlow 2.8s ease-in-out infinite;
+        }
+
+        .cinematic-logo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            object-fit: cover;
+        }
+
+        .cinematic-brand-title {
+            margin: 0 0 5px;
+            color: #f9e6a5;
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.25rem, 3vw, 1.65rem);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 0 0 18px rgba(212, 175, 55, .35);
+            animation: introCopy .9s ease 2s both;
+        }
+
+        .cinematic-brand-subtitle {
+            margin: 0 0 7px;
+            color: #f7e2a9;
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(.86rem, 2vw, 1.05rem);
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            animation: introCopy .9s ease 2.25s both;
+        }
+
+        .cinematic-cities {
+            margin: 0;
+            color: #dfb36a;
+            font-size: .82rem;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: introCopy .9s ease 2.5s both;
+        }
+
         .gold-sweep {
             position: relative;
             isolation: isolate;
@@ -490,17 +628,42 @@
     <!-- Royal Intro Splash -->
     <div id="splashScreen"
         class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center transition-opacity duration-700">
-        <div class="text-center px-4">
-            <div class="w-36 h-36 sm:w-44 sm:h-44 mx-auto mb-6 logo-intro-anim">
-                <div class="logo-intro-frame">
-                    <img src="{{ logo_url }}" alt="Shivbhavani royal logo">
-                </div>
+        <div class="cinematic-splash">
+            <div class="ambient-glow"></div>
+            <div class="dupatta-wave">
+                <svg viewBox="0 0 500 800" width="100%" height="100%" fill="none" preserveAspectRatio="none"
+                    aria-hidden="true">
+                    <defs>
+                        <linearGradient id="silkFabric" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#4a0812" />
+                            <stop offset="35%" stop-color="#8a1424" />
+                            <stop offset="70%" stop-color="#5c0a15" />
+                            <stop offset="100%" stop-color="#3b050d" />
+                        </linearGradient>
+                        <linearGradient id="zariGold" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#E5C158" />
+                            <stop offset="50%" stop-color="#FFF2B2" />
+                            <stop offset="100%" stop-color="#C59B27" />
+                        </linearGradient>
+                    </defs>
+                    <path
+                        d="M80 0C180 180 20 380 160 580C240 700 320 780 420 800H480C380 750 310 650 240 540C130 360 270 190 160 0Z"
+                        fill="url(#silkFabric)" opacity=".94" />
+                    <path d="M80 0C180 180 20 380 160 580C240 700 320 780 420 800" stroke="url(#zariGold)"
+                        stroke-width="12" stroke-linecap="round" />
+                    <path d="M160 0C270 190 130 360 240 540C310 650 380 750 480 800" stroke="url(#zariGold)"
+                        stroke-width="12" stroke-linecap="round" />
+                    <circle cx="150" cy="270" r="14" fill="url(#zariGold)" opacity=".8" />
+                    <circle cx="210" cy="440" r="14" fill="url(#zariGold)" opacity=".8" />
+                </svg>
             </div>
-            <p class="splash-copy font-serif text-softGold text-sm sm:text-base tracking-widest uppercase">Welcome to
-                Shivbhavani
-                Safa Paghdi</p>
-            <span class="splash-copy inline-block mt-3 text-[11px] text-stone-400 font-sans tracking-wider">BHAVNAGAR •
-                SURAT</span>
+            <div class="final-flash"></div>
+        </div>
+        <div class="cinematic-brand px-4">
+            <div class="cinematic-logo"><img src="{{ logo_url }}" alt="Shivbhavani royal logo"></div>
+            <h1 class="cinematic-brand-title">Shivbhavani Safa Paghdi</h1>
+            <h2 class="cinematic-brand-subtitle">Wedding Accessories Palace</h2>
+            <p class="cinematic-cities">Bhavnagar | Surat</p>
         </div>
     </div>
 
@@ -954,7 +1117,7 @@
                     sessionStorage.setItem('shivbhavani_intro_seen', 'true');
                     setTimeout(() => splash.style.display = 'none', 700);
                 }
-            }, 1800);
+            }, 4300);
         });
 
         const observer = new IntersectionObserver((entries) => {

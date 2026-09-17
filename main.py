@@ -7,8 +7,10 @@ from datetime import datetime
 import json
 import os
 import re
+import secrets
 import shutil
 import uuid
+import hmac
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,8 +34,8 @@ HISTORY_FILE = "admin_history.json"
 LOGO_CONFIG_FILE = "logo_config.json"
 DESIGN_FILE = "design.json"
 DEFAULT_LOGO_URL = "/static/logo.svg"
-ADMIN_PASSWORD = "admin123"  # Change this to your preferred admin password
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", ADMIN_PASSWORD)
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "S@vani6055")
+ACTIVE_ADMIN_SESSIONS = set()
 
 DEFAULT_DESIGN = {
     "primary_color": "#54121E",
@@ -177,9 +179,9 @@ def append_history(action: str, item_title: str = "", item_type: str = "", admin
     return entry
 
 
-def is_admin_authenticated(request: Request, key: str = ""):
-    cookie_key = request.cookies.get("admin_session")
-    return (cookie_key == ADMIN_PASSWORD) or (key == ADMIN_PASSWORD)
+def is_admin_authenticated(request: Request):
+    session_token = request.cookies.get("admin_session")
+    return bool(session_token and session_token in ACTIVE_ADMIN_SESSIONS)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -227,12 +229,8 @@ async def receive_inquiry(
 
 
 @app.get("/admin", response_class=HTMLResponse)
-async def serve_admin(request: Request, key: str = ""):
-    is_authenticated = is_admin_authenticated(request, key)
-    if is_authenticated and key == ADMIN_PASSWORD:
-        response = RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
-        response.set_cookie(key="admin_session", value=ADMIN_PASSWORD, httponly=True, samesite="lax")
-        return response
+async def serve_admin(request: Request, error: str = ""):
+    is_authenticated = is_admin_authenticated(request)
 
     items = get_collection() if is_authenticated else []
     inquiries = get_inquiries() if is_authenticated else []
@@ -246,17 +244,28 @@ async def serve_admin(request: Request, key: str = ""):
         "inquiries": inquiries,
         "history": history,
         "logo_url": logo_url,
-        "design": design
+        "design": design,
+        "error": error
     })
 
 
 @app.post("/admin/login")
 async def admin_login(request: Request, password: str = Form(...)):
-    if password != ADMIN_PASSWORD:
-        raise HTTPException(status_code=403, detail="Unauthorized")
+    if not hmac.compare_digest(password, ADMIN_PASSWORD):
+        append_history("login failed", "Admin portal", "auth", "admin", "Invalid password")
+        return RedirectResponse(url="/admin?error=invalid", status_code=status.HTTP_303_SEE_OTHER)
 
+    session_token = secrets.token_urlsafe(32)
+    ACTIVE_ADMIN_SESSIONS.add(session_token)
     response = RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
-    response.set_cookie(key="admin_session", value=ADMIN_PASSWORD, httponly=True, samesite="lax")
+    response.set_cookie(
+        key="admin_session",
+        value=session_token,
+        httponly=True,
+        samesite="lax",
+        secure=request.url.scheme == "https",
+        max_age=86400
+    )
     append_history("login", "", "", "admin", "Admin logged in successfully")
     return response
 
@@ -314,7 +323,11 @@ async def admin_update_design(
 
 
 @app.post("/admin/logout")
-async def admin_logout():
+async def admin_logout(request: Request):
+    session_token = request.cookies.get("admin_session")
+    if session_token:
+        ACTIVE_ADMIN_SESSIONS.discard(session_token)
+        append_history("logout", "Admin portal", "auth", "admin", "Admin session ended")
     response = RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
     response.delete_cookie(key="admin_session")
     return response
@@ -329,10 +342,9 @@ async def admin_upload_media(
     badge: str = Form("New Arrival"),
     description: str = Form(""),
     featured: str = Form("false"),
-    key: str = Form(""),
     file: UploadFile = File(...)
 ):
-    if not is_admin_authenticated(request, key):
+    if not is_admin_authenticated(request):
         raise HTTPException(status_code=403, detail="Unauthorized")
 
     filename = f"{int(datetime.now().timestamp())}_{file.filename.replace(' ', '_')}"
@@ -394,8 +406,8 @@ async def admin_update_media(
 
 
 @app.post("/api/admin/delete-item")
-async def admin_delete_media(request: Request, item_id: str = Form(...), key: str = Form("")):
-    if not is_admin_authenticated(request, key):
+async def admin_delete_media(request: Request, item_id: str = Form(...)):
+    if not is_admin_authenticated(request):
         raise HTTPException(status_code=403, detail="Unauthorized")
 
     items = get_collection()

@@ -545,6 +545,20 @@
             letter-spacing: 0.18em;
         }
 
+        .header-social-action {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .header-social-action:hover {
+            transform: translateY(-2px);
+        }
+
         .bg-velvetWine {
             background-color: var(--live-primary) !important;
         }
@@ -700,15 +714,16 @@
             </nav>
 
             <div class="flex items-center gap-3">
-                <a href="https://instagram.com/shivbhavani_safa_bhavnagar" target="_blank"
-                    class="text-stone-600 hover:text-pink-600 text-lg transition" title="Visit Instagram">
+                <a href="https://instagram.com/shivbhavani_safa_bhavnagar" target="_blank" rel="noopener noreferrer"
+                    aria-label="Visit Shivbhavani on Instagram" title="Visit Instagram"
+                    class="header-social-action text-stone-600 hover:text-pink-600 text-lg transition">
                     <i class="fab fa-instagram"></i>
                 </a>
                 <a href="https://wa.me/919925245246?text=Hello,%20I%20would%20like%20to%20inquire%20about%20Safa%20and%20Paghdi%20pricing."
-                    target="_blank"
-                    class="bg-velvetWine hover:bg-softWine text-softGold font-medium px-4 py-2 rounded-full text-xs sm:text-sm inline-flex items-center gap-2 border border-champagneGold/30 shadow-xs transition">
-                    <i class="fab fa-whatsapp text-sm text-green-400"></i>
-                    <span>99 25 245 246</span>
+                    target="_blank" rel="noopener noreferrer" aria-label="Chat with Shivbhavani on WhatsApp"
+                    title="Chat on WhatsApp"
+                    class="header-social-action bg-velvetWine hover:bg-softWine text-softGold text-xl border border-champagneGold/40 shadow-xs transition">
+                    <i class="fab fa-whatsapp text-green-400"></i>
                 </a>
             </div>
         </div>

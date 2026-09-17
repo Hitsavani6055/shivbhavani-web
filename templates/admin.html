@@ -40,10 +40,14 @@
             <h2 class="text-xl font-bold">Admin Login</h2>
             <p class="text-xs text-stone-500 mt-1">Enter your password to manage media and view inquiries</p>
         </div>
+        {% if error == "invalid" %}
+        <p class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-800">Incorrect
+            password. Please try again.</p>
+        {% endif %}
         <form method="POST" action="/admin/login" class="space-y-4">
             <div>
                 <label class="block text-xs font-semibold mb-1">Password</label>
-                <input type="password" name="password" required placeholder="Default: admin123"
+                <input type="password" name="password" required placeholder="Enter admin password"
                     class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500">
             </div>
             <button type="submit"

@@ -1107,14 +1107,9 @@
                 history.replaceState(null, document.title, window.location.pathname + window.location.search);
                 window.scrollTo(0, 0);
             }
-            if (sessionStorage.getItem('shivbhavani_intro_seen') === 'true') {
-                splash.style.display = 'none';
-                return;
-            }
             setTimeout(() => {
                 if (splash) {
                     splash.style.opacity = '0';
-                    sessionStorage.setItem('shivbhavani_intro_seen', 'true');
                     setTimeout(() => splash.style.display = 'none', 700);
                 }
             }, 4300);

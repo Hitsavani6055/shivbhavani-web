@@ -14,3 +14,9 @@ services:
         value: 919925245246
       - key: INSTAGRAM_HANDLE
         value: shivbhavani_safa_bhavnagar
+      - key: PERSISTENT_DATA_DIR
+        value: /opt/render/project/src/persistent
+    disk:
+      name: shivbhavani-data
+      mountPath: /opt/render/project/src/persistent
+      sizeGB: 1

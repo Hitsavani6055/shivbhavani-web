@@ -22,20 +22,45 @@ app = FastAPI(
     version="2.0.0"
 )
 
+PERSISTENT_DATA_DIR = os.getenv("PERSISTENT_DATA_DIR", ".")
+UPLOAD_DIR = os.path.join(PERSISTENT_DATA_DIR, "uploads") if PERSISTENT_DATA_DIR != "." else os.path.join("static", "uploads")
+MEDIA_URL_PREFIX = "/media" if PERSISTENT_DATA_DIR != "." else "/static/uploads"
+
 # Ensure required directories exist
 os.makedirs("templates", exist_ok=True)
-os.makedirs("static/uploads", exist_ok=True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+if PERSISTENT_DATA_DIR != ".":
+    bundled_uploads = os.path.join("static", "uploads")
+    if os.path.isdir(bundled_uploads):
+        for filename in os.listdir(bundled_uploads):
+            source = os.path.join(bundled_uploads, filename)
+            target = os.path.join(UPLOAD_DIR, filename)
+            if os.path.isfile(source) and not os.path.exists(target):
+                shutil.copy2(source, target)
+    for data_filename in (
+        "collection.json", "business.json", "design.json",
+        "admin_history.json", "inquiries.json", "orders.json", "logo_config.json"
+    ):
+        source = data_filename
+        target = os.path.join(PERSISTENT_DATA_DIR, data_filename)
+        if os.path.isfile(source) and not os.path.exists(target):
+            shutil.copy2(source, target)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/media", StaticFiles(directory=UPLOAD_DIR), name="media")
 templates = Jinja2Templates(directory="templates")
 
-LEADS_FILE = "inquiries.json"
-ORDERS_FILE = "orders.json"
-COLLECTION_FILE = "collection.json"
-HISTORY_FILE = "admin_history.json"
-LOGO_CONFIG_FILE = "logo_config.json"
-DESIGN_FILE = "design.json"
-BUSINESS_FILE = "business.json"
+def persistent_file(filename):
+    return os.path.join(PERSISTENT_DATA_DIR, filename) if PERSISTENT_DATA_DIR != "." else filename
+
+
+LEADS_FILE = persistent_file("inquiries.json")
+ORDERS_FILE = persistent_file("orders.json")
+COLLECTION_FILE = persistent_file("collection.json")
+HISTORY_FILE = persistent_file("admin_history.json")
+LOGO_CONFIG_FILE = persistent_file("logo_config.json")
+DESIGN_FILE = persistent_file("design.json")
+BUSINESS_FILE = persistent_file("business.json")
 DEFAULT_LOGO_URL = "/static/logo.svg"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "S@vani6055")
 ACTIVE_ADMIN_SESSIONS = set()
@@ -115,6 +140,12 @@ def get_collection():
     try:
         with open(COLLECTION_FILE, "r", encoding="utf-8") as f:
             collection = json.load(f)
+            for item in collection:
+                if item.get("url", "").startswith("/static/uploads/") and PERSISTENT_DATA_DIR != ".":
+                    item["url"] = item["url"].replace("/static/uploads/", f"{MEDIA_URL_PREFIX}/")
+                for image in item.get("images", []):
+                    if isinstance(image, dict) and image.get("url", "").startswith("/static/uploads/") and PERSISTENT_DATA_DIR != ".":
+                        image["url"] = image["url"].replace("/static/uploads/", f"{MEDIA_URL_PREFIX}/")
             return [item for item in collection if media_file_exists(item)]
     except Exception:
         return DEFAULT_COLLECTION
@@ -122,6 +153,8 @@ def get_collection():
 
 def media_file_exists(item):
     url = item.get("url", "")
+    if PERSISTENT_DATA_DIR != "." and url.startswith(f"{MEDIA_URL_PREFIX}/"):
+        return os.path.isfile(os.path.join(UPLOAD_DIR, url.split(f"{MEDIA_URL_PREFIX}/", 1)[1]))
     if not url.startswith("/static/"):
         return True
     relative_path = url.split("/static/", 1)[1]
@@ -164,6 +197,8 @@ def get_logo_url():
             with open(LOGO_CONFIG_FILE, "r", encoding="utf-8") as f:
                 logo_url = json.load(f).get("url", "")
             logo_path = logo_url.removeprefix("/static/")
+            if logo_url.startswith(f"{MEDIA_URL_PREFIX}/") and os.path.exists(os.path.join(UPLOAD_DIR, logo_path)):
+                return logo_url
             if logo_url.startswith("/static/") and os.path.exists(os.path.join("static", logo_path)):
                 return logo_url
         except Exception:
@@ -440,16 +475,16 @@ async def admin_upload_logo(request: Request, file: UploadFile = File(...)):
 
     old_logo_url = get_logo_url()
     filename = f"logo_{uuid.uuid4().hex}{extension}"
-    filepath = os.path.join("static", filename)
+    filepath = os.path.join(UPLOAD_DIR, filename)
     with open(filepath, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    logo_url = f"/static/{filename}"
+    logo_url = f"{MEDIA_URL_PREFIX}/{filename}"
     with open(LOGO_CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump({"url": logo_url}, f, indent=4)
 
-    if old_logo_url.startswith("/static/logo_"):
-        old_logo_path = os.path.join("static", old_logo_url.split("/static/", 1)[1])
+    if old_logo_url.startswith(f"{MEDIA_URL_PREFIX}/"):
+        old_logo_path = os.path.join(UPLOAD_DIR, old_logo_url.split(f"{MEDIA_URL_PREFIX}/", 1)[1])
         if os.path.exists(old_logo_path) and old_logo_path != filepath:
             os.remove(old_logo_path)
 
@@ -553,11 +588,11 @@ async def admin_upload_media(
         gallery = []
         for upload in gallery_images:
             filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}_{upload.filename.replace(' ', '_')}"
-            filepath = os.path.join("static/uploads", filename)
+            filepath = os.path.join(UPLOAD_DIR, filename)
             with open(filepath, "wb") as buffer:
                 shutil.copyfileobj(upload.file, buffer)
             gallery.append({
-                "url": f"/static/uploads/{filename}",
+                "url": f"{MEDIA_URL_PREFIX}/{filename}",
                 "alt": f"{title} view {len(gallery) + 1}"
             })
 
@@ -578,7 +613,7 @@ async def admin_upload_media(
 
     for upload in uploaded_files:
         filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}_{upload.filename.replace(' ', '_')}"
-        filepath = os.path.join("static/uploads", filename)
+        filepath = os.path.join(UPLOAD_DIR, filename)
         with open(filepath, "wb") as buffer:
             shutil.copyfileobj(upload.file, buffer)
 
@@ -587,7 +622,7 @@ async def admin_upload_media(
             "title": title,
             "category": category,
             "type": media_type,
-            "url": f"/static/uploads/{filename}",
+            "url": f"{MEDIA_URL_PREFIX}/{filename}",
             "badge": badge,
             "description": description.strip(),
             "colors": colors.strip().lower(),
@@ -668,11 +703,11 @@ async def add_item(
 
         safe_name = os.path.basename(image.filename).replace(" ", "_")
         filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}_{safe_name}"
-        filepath = os.path.join("static/uploads", filename)
+        filepath = os.path.join(UPLOAD_DIR, filename)
         with open(filepath, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
         gallery.append({
-            "url": f"/static/uploads/{filename}",
+            "url": f"{MEDIA_URL_PREFIX}/{filename}",
             "alt": f"{title} view {len(gallery) + 1}"
         })
 

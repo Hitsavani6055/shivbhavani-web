@@ -227,7 +227,7 @@
                     <i class="fas fa-cloud-arrow-up text-amber-600"></i> Add New Media
                 </h3>
 
-                <form action="/api/admin/upload" method="POST" enctype="multipart/form-data" class="space-y-3">
+                <form id="mediaUploadForm" action="/api/admin/upload" method="POST" enctype="multipart/form-data" class="space-y-3">
                     <div>
                         <label class="block text-xs font-semibold mb-1">Title *</label>
                         <input type="text" name="title" required placeholder="e.g. Royal Maroon Velvet Jodhpuri"
@@ -306,9 +306,18 @@
                         <div id="uploadPreview" class="upload-preview" aria-label="Selected gallery photo preview"></div>
                     </div>
 
-                    <button type="submit"
+                    <div id="uploadStatus" class="hidden rounded-lg border p-3 text-xs" role="status" aria-live="polite">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span id="uploadStatusText" class="font-semibold">Preparing upload...</span>
+                            <span id="uploadPercent" class="font-bold text-amber-700">0%</span>
+                        </div>
+                        <div class="h-2 w-full overflow-hidden rounded-full bg-stone-200">
+                            <div id="uploadProgressBar" class="h-full w-0 rounded-full bg-amber-600 transition-all duration-200"></div>
+                        </div>
+                    </div>
+                    <button id="uploadSubmitButton" type="submit"
                         class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-lg text-xs transition shadow mt-2">
-                        Upload to Website
+                        <i class="fas fa-cloud-arrow-up mr-1"></i> Upload to Website
                     </button>
                 </form>
             </div>
@@ -635,6 +644,64 @@
                 uploadPreview.appendChild(image);
             });
             uploadPreview.classList.toggle('has-images', files.length > 0);
+        });
+    }
+
+    const mediaUploadForm = document.getElementById('mediaUploadForm');
+    if (mediaUploadForm) {
+        mediaUploadForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const statusBox = document.getElementById('uploadStatus');
+            const statusText = document.getElementById('uploadStatusText');
+            const percent = document.getElementById('uploadPercent');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const submitButton = document.getElementById('uploadSubmitButton');
+            const files = Array.from(mediaUploadForm.querySelectorAll('input[type="file"]'))
+                .flatMap(input => Array.from(input.files || []));
+            if (!files.length) {
+                statusBox.className = 'rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800';
+                statusBox.classList.remove('hidden');
+                statusText.textContent = 'Select at least one image or video first.';
+                return;
+            }
+
+            const request = new XMLHttpRequest();
+            request.open('POST', mediaUploadForm.action);
+            request.upload.addEventListener('progress', uploadEvent => {
+                if (!uploadEvent.lengthComputable) return;
+                const value = Math.round((uploadEvent.loaded / uploadEvent.total) * 100);
+                progressBar.style.width = `${value}%`;
+                percent.textContent = `${value}%`;
+                statusText.textContent = value < 100
+                    ? `Uploading ${files.length} file${files.length === 1 ? '' : 's'}...`
+                    : 'Upload complete. Saving to catalogue...';
+            });
+            request.addEventListener('load', () => {
+                if (request.status >= 200 && request.status < 400) {
+                    progressBar.style.width = '100%';
+                    percent.textContent = '100%';
+                    statusBox.className = 'rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800';
+                    statusText.textContent = 'Uploaded successfully. Refreshing catalogue...';
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    statusBox.className = 'rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800';
+                    statusText.textContent = `Upload failed (${request.status}). Please try again.`;
+                    submitButton.disabled = false;
+                }
+            });
+            request.addEventListener('error', () => {
+                statusBox.className = 'rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800';
+                statusText.textContent = 'Upload failed. Check your connection and try again.';
+                submitButton.disabled = false;
+            });
+            statusBox.className = 'rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900';
+            statusBox.classList.remove('hidden');
+            statusText.textContent = 'Starting upload...';
+            percent.textContent = '0%';
+            progressBar.style.width = '0%';
+            submitButton.disabled = true;
+            submitButton.classList.add('opacity-60', 'cursor-not-allowed');
+            request.send(new FormData(mediaUploadForm));
         });
     }
 </script>

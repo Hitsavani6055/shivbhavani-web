@@ -11,6 +11,14 @@
 
 <body class="admin-shell bg-stone-100 text-stone-800 font-sans min-h-screen">
     <style>
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        .admin-login {
+            width: min(100% - 1.5rem, 28rem);
+        }
         .admin-shell {
             background: radial-gradient(circle at 8% 0%, rgba(197, 160, 89, .16), transparent 28%), #f5f1eb;
         }
@@ -81,7 +89,18 @@
             }
             .admin-header .admin-actions {
                 width: 100%;
-                justify-content: flex-end;
+                justify-content: stretch;
+                flex-wrap: wrap;
+            }
+            .admin-header .admin-actions a,
+            .admin-header .admin-actions button {
+                min-height: 2.5rem;
+                flex: 1 1 auto;
+            }
+            .admin-login {
+                width: calc(100% - 1.5rem);
+                margin: 1rem .75rem 0;
+                padding: 1.25rem 1rem;
             }
             .admin-dashboard {
                 padding: 1rem .75rem 2rem;
@@ -96,10 +115,6 @@
             }
             .admin-table {
                 min-width: 640px;
-            }
-            .admin-login {
-                margin: 2rem .75rem 0;
-                padding: 1.25rem;
             }
         }
     </style>

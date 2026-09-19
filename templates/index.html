@@ -836,6 +836,31 @@
         }
 
         @media (max-width: 640px) {
+            .dupatta-wave {
+                width: 86vw;
+                height: 125vh;
+                top: -12vh;
+                left: -105vw;
+                opacity: .96;
+            }
+
+            @keyframes silkWaveGlide {
+                0% {
+                    left: -105vw;
+                    transform: rotate(-18deg) scale(.9);
+                }
+
+                48% {
+                    left: 4vw;
+                    transform: rotate(5deg) scale(1.08);
+                }
+
+                100% {
+                    left: 120vw;
+                    transform: rotate(15deg) scale(1.12);
+                }
+            }
+
             .royal-brand {
                 gap: 0.6rem;
             }

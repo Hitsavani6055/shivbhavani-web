@@ -22,7 +22,9 @@ app = FastAPI(
     version="2.0.0"
 )
 
-PERSISTENT_DATA_DIR = os.getenv("PERSISTENT_DATA_DIR", ".")
+RENDER_DISK_DIR = "/opt/render/project/src/persistent"
+configured_data_dir = os.getenv("PERSISTENT_DATA_DIR", "").strip()
+PERSISTENT_DATA_DIR = configured_data_dir or (RENDER_DISK_DIR if os.path.isdir(RENDER_DISK_DIR) else ".")
 UPLOAD_DIR = os.path.join(PERSISTENT_DATA_DIR, "uploads") if PERSISTENT_DATA_DIR != "." else os.path.join("static", "uploads")
 MEDIA_URL_PREFIX = "/media" if PERSISTENT_DATA_DIR != "." else "/static/uploads"
 MAX_VIDEO_BYTES = 200 * 1024 * 1024
@@ -162,9 +164,12 @@ DEFAULT_COLLECTION = [
 
 def get_collection():
     if not os.path.exists(COLLECTION_FILE):
-        with open(COLLECTION_FILE, "w", encoding="utf-8") as f:
-            json.dump(DEFAULT_COLLECTION, f, indent=4, ensure_ascii=False)
-        return DEFAULT_COLLECTION
+        if PERSISTENT_DATA_DIR != "." and os.path.exists("collection.json"):
+            shutil.copy2("collection.json", COLLECTION_FILE)
+        else:
+            with open(COLLECTION_FILE, "w", encoding="utf-8") as f:
+                json.dump(DEFAULT_COLLECTION, f, indent=4, ensure_ascii=False)
+            return DEFAULT_COLLECTION
     try:
         with open(COLLECTION_FILE, "r", encoding="utf-8") as f:
             collection = json.load(f)
@@ -292,7 +297,11 @@ async def serve_home(request: Request):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "persistent_storage": PERSISTENT_DATA_DIR != ".",
+        "media_route": MEDIA_URL_PREFIX
+    }
 
 
 @app.post("/api/inquiry")

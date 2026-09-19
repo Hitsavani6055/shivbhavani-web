@@ -295,6 +295,7 @@
                         <label class="block text-xs font-semibold mb-1">Video or Single Media File</label>
                         <input type="file" name="files" accept="video/*,image/*"
                             class="admin-input w-full border rounded-lg p-1.5 text-xs">
+                        <p class="text-[10px] text-stone-500 mt-1">Video maximum 200 MB. Single image maximum 30 MB.</p>
                     </div>
 
                     <div>
@@ -302,7 +303,7 @@
                         <input type="file" name="item_images" multiple accept="image/*"
                             id="itemImagesInput" class="admin-input admin-file-input w-full border rounded-lg p-1.5 text-xs">
                         <p class="text-[10px] text-stone-500 mt-1">Select multiple photos to create one swipeable
-                            gallery item.</p>
+                            gallery item. Each photo maximum 30 MB.</p>
                         <div id="uploadPreview" class="upload-preview" aria-label="Selected gallery photo preview"></div>
                     </div>
 
@@ -685,7 +686,14 @@
                     setTimeout(() => window.location.reload(), 800);
                 } else {
                     statusBox.className = 'rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800';
-                    statusText.textContent = `Upload failed (${request.status}). Please try again.`;
+                    let detail = `Upload failed (${request.status}). Please try again.`;
+                    try {
+                        const response = JSON.parse(request.responseText);
+                        if (response.detail) detail = response.detail;
+                    } catch (error) {
+                        // Keep the status message when the server does not return JSON.
+                    }
+                    statusText.textContent = detail;
                     submitButton.disabled = false;
                 }
             });

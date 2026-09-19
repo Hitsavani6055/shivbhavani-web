@@ -25,6 +25,8 @@ app = FastAPI(
 PERSISTENT_DATA_DIR = os.getenv("PERSISTENT_DATA_DIR", ".")
 UPLOAD_DIR = os.path.join(PERSISTENT_DATA_DIR, "uploads") if PERSISTENT_DATA_DIR != "." else os.path.join("static", "uploads")
 MEDIA_URL_PREFIX = "/media" if PERSISTENT_DATA_DIR != "." else "/static/uploads"
+MAX_VIDEO_BYTES = 200 * 1024 * 1024
+MAX_IMAGE_BYTES = 30 * 1024 * 1024
 
 # Ensure required directories exist
 os.makedirs("templates", exist_ok=True)
@@ -52,6 +54,32 @@ templates = Jinja2Templates(directory="templates")
 
 def persistent_file(filename):
     return os.path.join(PERSISTENT_DATA_DIR, filename) if PERSISTENT_DATA_DIR != "." else filename
+
+
+def save_upload(upload: UploadFile, filepath: str, max_bytes: int, media_label: str):
+    written = 0
+    try:
+        with open(filepath, "wb") as buffer:
+            while True:
+                chunk = upload.file.read(1024 * 1024)
+                if not chunk:
+                    break
+                written += len(chunk)
+                if written > max_bytes:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"{media_label} is too large. Maximum allowed size is {max_bytes // (1024 * 1024)} MB."
+                    )
+                buffer.write(chunk)
+    except HTTPException:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        raise
+    except OSError as error:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        raise HTTPException(status_code=500, detail=f"Could not save {media_label.lower()}: {error}") from error
+    return written
 
 
 LEADS_FILE = persistent_file("inquiries.json")
@@ -476,8 +504,7 @@ async def admin_upload_logo(request: Request, file: UploadFile = File(...)):
     old_logo_url = get_logo_url()
     filename = f"logo_{uuid.uuid4().hex}{extension}"
     filepath = os.path.join(UPLOAD_DIR, filename)
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    save_upload(file, filepath, MAX_IMAGE_BYTES, "Logo image")
 
     logo_url = f"{MEDIA_URL_PREFIX}/{filename}"
     with open(LOGO_CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -587,10 +614,12 @@ async def admin_upload_media(
     if gallery_images:
         gallery = []
         for upload in gallery_images:
-            filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}_{upload.filename.replace(' ', '_')}"
+            extension = os.path.splitext(upload.filename or "")[1].lower()
+            if not (upload.content_type or "").startswith("image/"):
+                raise HTTPException(status_code=400, detail="Gallery files must be images")
+            filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}{extension}"
             filepath = os.path.join(UPLOAD_DIR, filename)
-            with open(filepath, "wb") as buffer:
-                shutil.copyfileobj(upload.file, buffer)
+            save_upload(upload, filepath, MAX_IMAGE_BYTES, "Gallery image")
             gallery.append({
                 "url": f"{MEDIA_URL_PREFIX}/{filename}",
                 "alt": f"{title} view {len(gallery) + 1}"
@@ -612,10 +641,13 @@ async def admin_upload_media(
         })
 
     for upload in uploaded_files:
-        filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}_{upload.filename.replace(' ', '_')}"
+        extension = os.path.splitext(upload.filename or "")[1].lower()
+        is_video = (upload.content_type or "").startswith("video/") or media_type == "video"
+        max_bytes = MAX_VIDEO_BYTES if is_video else MAX_IMAGE_BYTES
+        media_label = "Video" if is_video else "Image"
+        filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}{extension}"
         filepath = os.path.join(UPLOAD_DIR, filename)
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(upload.file, buffer)
+        save_upload(upload, filepath, max_bytes, media_label)
 
         new_media = {
             "id": f"item_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}",
@@ -701,11 +733,10 @@ async def add_item(
         if not (image.content_type or "").startswith("image/"):
             raise HTTPException(status_code=400, detail="Only image files are allowed")
 
-        safe_name = os.path.basename(image.filename).replace(" ", "_")
-        filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}_{safe_name}"
+        extension = os.path.splitext(image.filename or "")[1].lower()
+        filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}{extension}"
         filepath = os.path.join(UPLOAD_DIR, filename)
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
+        save_upload(image, filepath, MAX_IMAGE_BYTES, "Gallery image")
         gallery.append({
             "url": f"{MEDIA_URL_PREFIX}/{filename}",
             "alt": f"{title} view {len(gallery) + 1}"

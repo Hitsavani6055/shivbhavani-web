@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException, status, Response
+from typing import List
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -29,18 +30,28 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 LEADS_FILE = "inquiries.json"
+ORDERS_FILE = "orders.json"
 COLLECTION_FILE = "collection.json"
 HISTORY_FILE = "admin_history.json"
 LOGO_CONFIG_FILE = "logo_config.json"
 DESIGN_FILE = "design.json"
+BUSINESS_FILE = "business.json"
 DEFAULT_LOGO_URL = "/static/logo.svg"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "S@vani6055")
 ACTIVE_ADMIN_SESSIONS = set()
 
 DEFAULT_DESIGN = {
-    "primary_color": "#54121E",
+    "primary_color": "#5B0E1E",
     "accent_color": "#C5A059",
-    "background_color": "#FAF7F2"
+    "background_color": "#FBF8F1"
+}
+
+DEFAULT_BUSINESS = {
+    "phone": "919925245246",
+    "instagram": "shivbhavani_safa_bhavnagar",
+    "headline": "Royal Elegance. Authentic Heritage.",
+    "announcement": "Custom wedding turbans and royal groom accessories in Bhavnagar and Surat.",
+    "timings": "Open daily by appointment"
 }
 
 # Pre-seeded collection using your showroom assets
@@ -127,6 +138,16 @@ def get_inquiries():
     return []
 
 
+def get_orders():
+    if os.path.exists(ORDERS_FILE):
+        try:
+            with open(ORDERS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+
 def get_history():
     if os.path.exists(HISTORY_FILE):
         try:
@@ -162,6 +183,16 @@ def get_design():
     return DEFAULT_DESIGN.copy()
 
 
+def get_business():
+    if os.path.exists(BUSINESS_FILE):
+        try:
+            with open(BUSINESS_FILE, "r", encoding="utf-8") as f:
+                return {**DEFAULT_BUSINESS, **json.load(f)}
+        except Exception:
+            pass
+    return DEFAULT_BUSINESS.copy()
+
+
 def append_history(action: str, item_title: str = "", item_type: str = "", admin: str = "admin", details: str = ""):
     history = get_history()
     entry = {
@@ -191,7 +222,8 @@ async def serve_home(request: Request):
         "request": request,
         "items": items,
         "logo_url": get_logo_url(),
-        "design": get_design()
+        "design": get_design(),
+        "business": get_business()
     })
 
 
@@ -217,6 +249,7 @@ async def receive_inquiry(
         "event_date": event_date,
         "service_type": service_type,
         "note": note,
+        "status": "New",
         "submitted_at": datetime.now().strftime("%d-%m-%Y %I:%M %p")
     }
     inquiries = get_inquiries()
@@ -224,6 +257,36 @@ async def receive_inquiry(
     with open(LEADS_FILE, "w", encoding="utf-8") as f:
         json.dump(inquiries, f, indent=4, ensure_ascii=False)
     return JSONResponse(status_code=200, content={"status": "success"})
+
+
+@app.post("/api/admin/inquiries/{inquiry_id}/status")
+async def update_inquiry_status(
+    inquiry_id: str,
+    request: Request,
+    inquiry_status: str = Form(...)
+):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    allowed_statuses = {"New", "Contacted", "Confirmed", "Completed", "Cancelled"}
+    if inquiry_status not in allowed_statuses:
+        raise HTTPException(status_code=400, detail="Invalid inquiry status")
+
+    inquiries = get_inquiries()
+    inquiry = next((entry for entry in inquiries if entry.get("id") == inquiry_id), None)
+    if inquiry is None:
+        raise HTTPException(status_code=404, detail="Inquiry not found")
+    old_status = inquiry.get("status", "New")
+    inquiry["status"] = inquiry_status
+    with open(LEADS_FILE, "w", encoding="utf-8") as f:
+        json.dump(inquiries, f, indent=4, ensure_ascii=False)
+    append_history(
+        "inquiry status update",
+        inquiry.get("name", "Customer"),
+        "inquiry",
+        "admin",
+        f"{old_status} -> {inquiry_status}"
+    )
+    return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
 
 # --- ADMIN PANEL ROUTES ---
 
@@ -234,19 +297,115 @@ async def serve_admin(request: Request, error: str = ""):
 
     items = get_collection() if is_authenticated else []
     inquiries = get_inquiries() if is_authenticated else []
+    orders = get_orders() if is_authenticated else []
     history = get_history() if is_authenticated else []
     logo_url = get_logo_url() if is_authenticated else DEFAULT_LOGO_URL
     design = get_design() if is_authenticated else DEFAULT_DESIGN.copy()
+    business = get_business() if is_authenticated else DEFAULT_BUSINESS.copy()
     return templates.TemplateResponse("admin.html", {
         "request": request,
         "is_authenticated": is_authenticated,
         "items": items,
         "inquiries": inquiries,
+        "orders": orders,
         "history": history,
         "logo_url": logo_url,
         "design": design,
+        "business": business,
         "error": error
     })
+
+
+@app.post("/api/admin/orders/create")
+async def create_order(
+    request: Request,
+    customer_name: str = Form(...),
+    phone: str = Form(...),
+    branch: str = Form("Bhavnagar (Main Branch)"),
+    event_date: str = Form(""),
+    pickup_date: str = Form(""),
+    return_date: str = Form(""),
+    event_type: str = Form("Wedding"),
+    product_name: List[str] = Form([]),
+    quantity: List[str] = Form([]),
+    item_price: List[str] = Form([]),
+    total_amount: str = Form("0"),
+    advance_paid: str = Form("0"),
+    deposit_amount: str = Form("0"),
+    payment_method: str = Form("Cash"),
+    payment_status: str = Form("Unpaid"),
+    notes: str = Form("")
+):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    cleaned_phone = re.sub(r"\D", "", phone)
+    if len(cleaned_phone) < 10:
+        raise HTTPException(status_code=400, detail="Enter a valid customer phone number")
+    def money(value: str) -> float:
+        try:
+            return max(0, float(value or 0))
+        except ValueError:
+            return 0
+
+    products = []
+    for index, name in enumerate(product_name):
+        if name.strip():
+            try:
+                item_quantity = max(1, int(quantity[index] or 1)) if index < len(quantity) else 1
+            except ValueError:
+                item_quantity = 1
+            products.append({
+                "name": name.strip()[:120],
+                "quantity": item_quantity,
+                "price": money(item_price[index]) if index < len(item_price) else 0
+            })
+    orders = get_orders()
+    order_id = f"ORD-{datetime.now().strftime('%Y%m%d')}-{len(orders) + 1:04d}"
+    order = {
+        "id": order_id,
+        "customer_name": customer_name.strip()[:100],
+        "phone": cleaned_phone,
+        "branch": branch.strip()[:80],
+        "event_date": event_date,
+        "pickup_date": pickup_date,
+        "return_date": return_date,
+        "event_type": event_type,
+        "products": products,
+        "total_amount": money(total_amount),
+        "advance_paid": money(advance_paid),
+        "balance_amount": max(0, money(total_amount) - money(advance_paid)),
+        "deposit_amount": money(deposit_amount),
+        "payment_method": payment_method,
+        "payment_status": payment_status,
+        "status": "New",
+        "notes": notes.strip()[:500],
+        "created_at": datetime.now().strftime("%d-%m-%Y %I:%M %p")
+    }
+    orders.insert(0, order)
+    with open(ORDERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(orders, f, indent=4, ensure_ascii=False)
+    append_history("order created", order["id"], "order", "admin", f"{order['customer_name']} | {len(products)} product(s)")
+    return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/api/admin/orders/{order_id}/status")
+async def update_order_status(order_id: str, request: Request, order_status: str = Form(...)):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    allowed = {"New", "Contacted", "Quotation Sent", "Advance Pending", "Confirmed", "Preparing",
+               "Ready for Pickup", "Out for Delivery", "Delivered", "Returned", "Completed", "Cancelled"}
+    if order_status not in allowed:
+        raise HTTPException(status_code=400, detail="Invalid order status")
+    orders = get_orders()
+    order = next((entry for entry in orders if entry.get("id") == order_id), None)
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    old_status = order.get("status", "New")
+    order["status"] = order_status
+    with open(ORDERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(orders, f, indent=4, ensure_ascii=False)
+    append_history("order status update", order_id, "order", "admin", f"{old_status} -> {order_status}")
+    return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.post("/admin/login")
@@ -322,6 +481,38 @@ async def admin_update_design(
     return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
 
 
+@app.post("/api/admin/business")
+async def update_business(
+    request: Request,
+    phone: str = Form(...),
+    instagram: str = Form(...),
+    headline: str = Form(...),
+    announcement: str = Form(...),
+    timings: str = Form(...)
+):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    cleaned_phone = re.sub(r"\D", "", phone)
+    if len(cleaned_phone) < 10:
+        raise HTTPException(status_code=400, detail="Enter a valid phone number")
+    handle = instagram.strip().lstrip("@").replace(" ", "")
+    if not handle:
+        raise HTTPException(status_code=400, detail="Instagram handle is required")
+
+    business = {
+        "phone": cleaned_phone,
+        "instagram": handle,
+        "headline": headline.strip()[:120],
+        "announcement": announcement.strip()[:240],
+        "timings": timings.strip()[:120]
+    }
+    with open(BUSINESS_FILE, "w", encoding="utf-8") as f:
+        json.dump(business, f, indent=4, ensure_ascii=False)
+    append_history("business update", "Business settings", "settings", "admin", "Phone, Instagram, headline and timings updated")
+    return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
+
+
 @app.post("/admin/logout")
 async def admin_logout(request: Request):
     session_token = request.cookies.get("admin_session")
@@ -341,34 +532,81 @@ async def admin_upload_media(
     media_type: str = Form(...),
     badge: str = Form("New Arrival"),
     description: str = Form(""),
+    colors: str = Form(""),
+    availability: str = Form("Available"),
+    price_label: str = Form(""),
     featured: str = Form("false"),
-    file: UploadFile = File(...)
+    files: list[UploadFile] | None = File(None),
+    item_images: list[UploadFile] | None = File(None)
 ):
     if not is_admin_authenticated(request):
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    filename = f"{int(datetime.now().timestamp())}_{file.filename.replace(' ', '_')}"
-    filepath = os.path.join("static/uploads", filename)
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    new_media = {
-        "id": f"item_{int(datetime.now().timestamp())}",
-        "title": title,
-        "category": category,
-        "type": media_type,
-        "url": f"/static/uploads/{filename}",
-        "badge": badge,
-        "description": description.strip(),
-        "featured": featured == "true"
-    }
+    uploaded_files = [upload for upload in (files or []) if upload.filename]
+    gallery_images = [upload for upload in (item_images or []) if upload.filename]
+    if not uploaded_files and not gallery_images:
+        raise HTTPException(status_code=400, detail="Select at least one media file")
 
     items = get_collection()
-    items.insert(0, new_media)
+
+    if gallery_images:
+        gallery = []
+        for upload in gallery_images:
+            filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}_{upload.filename.replace(' ', '_')}"
+            filepath = os.path.join("static/uploads", filename)
+            with open(filepath, "wb") as buffer:
+                shutil.copyfileobj(upload.file, buffer)
+            gallery.append({
+                "url": f"/static/uploads/{filename}",
+                "alt": f"{title} view {len(gallery) + 1}"
+            })
+
+        items.insert(0, {
+            "id": f"item_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}",
+            "title": title,
+            "category": category,
+            "type": "image",
+            "url": gallery[0]["url"],
+            "images": gallery,
+            "badge": badge,
+            "description": description.strip(),
+            "colors": colors.strip().lower(),
+            "availability": availability.strip(),
+            "price_label": price_label.strip(),
+            "featured": featured == "true"
+        })
+
+    for upload in uploaded_files:
+        filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}_{upload.filename.replace(' ', '_')}"
+        filepath = os.path.join("static/uploads", filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(upload.file, buffer)
+
+        new_media = {
+            "id": f"item_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}",
+            "title": title,
+            "category": category,
+            "type": media_type,
+            "url": f"/static/uploads/{filename}",
+            "badge": badge,
+            "description": description.strip(),
+            "colors": colors.strip().lower(),
+            "availability": availability.strip(),
+            "price_label": price_label.strip(),
+            "featured": featured == "true"
+        }
+        items.insert(0, new_media)
+
     with open(COLLECTION_FILE, "w", encoding="utf-8") as f:
         json.dump(items, f, indent=4, ensure_ascii=False)
 
-    append_history("upload", title, media_type, "admin", f"Category: {category} | Badge: {badge}")
+    append_history(
+        "upload",
+        title,
+        "image gallery" if gallery_images else media_type,
+        "admin",
+        f"Category: {category} | Badge: {badge} | Files: {len(uploaded_files)} | Gallery images: {len(gallery_images)}"
+    )
 
     return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
 
@@ -381,6 +619,9 @@ async def admin_update_media(
     category: str = Form(...),
     badge: str = Form("Royal Look"),
     description: str = Form(""),
+    colors: str = Form(""),
+    availability: str = Form("Available"),
+    price_label: str = Form(""),
     featured: str = Form("false")
 ):
     if not is_admin_authenticated(request):
@@ -396,6 +637,9 @@ async def admin_update_media(
         "category": category.strip(),
         "badge": badge.strip(),
         "description": description.strip(),
+        "colors": colors.strip().lower(),
+        "availability": availability.strip(),
+        "price_label": price_label.strip(),
         "featured": featured == "true"
     })
     with open(COLLECTION_FILE, "w", encoding="utf-8") as f:
@@ -403,6 +647,54 @@ async def admin_update_media(
 
     append_history("update", item["title"], item.get("type", "media"), "admin", f"Updated {item_id}")
     return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/admin/add-item")
+async def add_item(
+    request: Request,
+    title: str = Form(...),
+    category: str = Form(...),
+    item_images: list[UploadFile] = File(...)
+):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    gallery = []
+    for image in item_images:
+        if not image.filename:
+            continue
+        if not (image.content_type or "").startswith("image/"):
+            raise HTTPException(status_code=400, detail="Only image files are allowed")
+
+        safe_name = os.path.basename(image.filename).replace(" ", "_")
+        filename = f"{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}_{safe_name}"
+        filepath = os.path.join("static/uploads", filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+        gallery.append({
+            "url": f"/static/uploads/{filename}",
+            "alt": f"{title} view {len(gallery) + 1}"
+        })
+
+    if not gallery:
+        raise HTTPException(status_code=400, detail="Select at least one image")
+
+    items = get_collection()
+    item = {
+        "id": f"item_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}",
+        "title": title.strip(),
+        "category": category.strip(),
+        "type": "image",
+        "url": gallery[0]["url"],
+        "images": gallery,
+        "badge": "Royal Look"
+    }
+    items.insert(0, item)
+    with open(COLLECTION_FILE, "w", encoding="utf-8") as f:
+        json.dump(items, f, indent=4, ensure_ascii=False)
+
+    append_history("upload", item["title"], "image gallery", "admin", f"Category: {item['category']} | Images: {len(gallery)}")
+    return JSONResponse(status_code=200, content={"status": "success", "images": [image["url"] for image in gallery]})
 
 
 @app.post("/api/admin/delete-item")

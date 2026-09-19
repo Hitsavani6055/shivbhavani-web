@@ -1,5 +1,113 @@
 [
     {
+        "id": "hist_1789819254_16",
+        "action": "login",
+        "item_title": "",
+        "item_type": "",
+        "admin": "admin",
+        "details": "Admin logged in successfully",
+        "timestamp": "19-09-2026 05:30 PM"
+    },
+    {
+        "id": "hist_1789819247_15",
+        "action": "logout",
+        "item_title": "Admin portal",
+        "item_type": "auth",
+        "admin": "admin",
+        "details": "Admin session ended",
+        "timestamp": "19-09-2026 05:30 PM"
+    },
+    {
+        "id": "hist_1789819155_14",
+        "action": "design update",
+        "item_title": "Live website theme",
+        "item_type": "settings",
+        "admin": "admin",
+        "details": "Primary, accent, and background colors updated",
+        "timestamp": "19-09-2026 05:29 PM"
+    },
+    {
+        "id": "hist_1789819153_13",
+        "action": "design update",
+        "item_title": "Live website theme",
+        "item_type": "settings",
+        "admin": "admin",
+        "details": "Primary, accent, and background colors updated",
+        "timestamp": "19-09-2026 05:29 PM"
+    },
+    {
+        "id": "hist_1789819024_12",
+        "action": "login",
+        "item_title": "",
+        "item_type": "",
+        "admin": "admin",
+        "details": "Admin logged in successfully",
+        "timestamp": "19-09-2026 05:27 PM"
+    },
+    {
+        "id": "hist_1789818588_11",
+        "action": "login",
+        "item_title": "",
+        "item_type": "",
+        "admin": "admin",
+        "details": "Admin logged in successfully",
+        "timestamp": "19-09-2026 05:19 PM"
+    },
+    {
+        "id": "hist_1789816658_10",
+        "action": "login failed",
+        "item_title": "Admin portal",
+        "item_type": "auth",
+        "admin": "admin",
+        "details": "Invalid password",
+        "timestamp": "19-09-2026 04:47 PM"
+    },
+    {
+        "id": "hist_1789809133_9",
+        "action": "business update",
+        "item_title": "Business settings",
+        "item_type": "settings",
+        "admin": "admin",
+        "details": "Phone, Instagram, headline and timings updated",
+        "timestamp": "19-09-2026 02:42 PM"
+    },
+    {
+        "id": "hist_1789809106_8",
+        "action": "business update",
+        "item_title": "Business settings",
+        "item_type": "settings",
+        "admin": "admin",
+        "details": "Phone, Instagram, headline and timings updated",
+        "timestamp": "19-09-2026 02:41 PM"
+    },
+    {
+        "id": "hist_1789809078_7",
+        "action": "login",
+        "item_title": "",
+        "item_type": "",
+        "admin": "admin",
+        "details": "Admin logged in successfully",
+        "timestamp": "19-09-2026 02:41 PM"
+    },
+    {
+        "id": "hist_1789801119_6",
+        "action": "upload",
+        "item_title": "talwar",
+        "item_type": "image gallery",
+        "admin": "admin",
+        "details": "Category: Talwar & Accessories | Badge: Royal Look | Files: 0 | Gallery images: 5",
+        "timestamp": "19-09-2026 12:28 PM"
+    },
+    {
+        "id": "hist_1789801050_5",
+        "action": "login",
+        "item_title": "",
+        "item_type": "",
+        "admin": "admin",
+        "details": "Admin logged in successfully",
+        "timestamp": "19-09-2026 12:27 PM"
+    },
+    {
         "id": "hist_1789582956_4",
         "action": "login",
         "item_title": "",

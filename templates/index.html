@@ -25,10 +25,10 @@
                         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
                     },
                     colors: {
-                        softBg: '#FAF7F2',
+                        softBg: '#FBF8F1',
                         cardBg: '#FFFFFF',
-                        velvetWine: '#54121E',
-                        softWine: '#6B1B29',
+                        velvetWine: '#5B0E1E',
+                        softWine: '#7A2435',
                         champagneGold: '#C5A059',
                         softGold: '#E6D7B8',
                         warmGoldText: '#946E28',
@@ -41,9 +41,9 @@
     </script>
     <style>
         :root {
-            --live-primary: #54121E;
+            --live-primary: #5B0E1E;
             --live-accent: #C5A059;
-            --live-background: #FAF7F2;
+            --live-background: #FBF8F1;
         }
 
         html {
@@ -61,7 +61,7 @@
                 radial-gradient(circle at 8% 14%, rgba(197, 160, 89, 0.12), transparent 24%),
                 radial-gradient(circle at 92% 68%, rgba(84, 18, 30, 0.06), transparent 28%);
             background-size: 100% 100%, 180% 180%, 160% 160%;
-            animation: ambientDrift 22s ease-in-out infinite alternate;
+            animation: none;
         }
 
         body::before {
@@ -238,45 +238,24 @@
         #splashScreen {
             isolation: isolate;
             overflow: hidden;
-            background-image: radial-gradient(circle at 50% 42%, rgba(111, 24, 38, 0.34), transparent 24%),
-                linear-gradient(135deg, #090707, #1f1110 52%, #080606);
+            background: #100b0b;
         }
 
         #splashScreen::before,
         #splashScreen::after {
-            content: "";
-            position: absolute;
-            width: 70vw;
-            height: 70vw;
-            max-width: 760px;
-            max-height: 760px;
-            border: 1px solid rgba(212, 175, 55, 0.16);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: -1;
+            display: none;
         }
 
         #splashScreen::before {
-            animation: haloSpin 28s linear infinite;
-            transform: rotate(20deg);
+            content: none;
         }
 
         #splashScreen::after {
-            width: 42vw;
-            height: 42vw;
-            animation: haloSpin 20s linear infinite reverse;
-            border-style: dashed;
+            content: none;
         }
 
         #splashScreen .text-center::before {
-            content: "";
-            position: absolute;
-            inset: 20% 8%;
-            background: radial-gradient(ellipse, rgba(212, 175, 55, 0.2), transparent 66%);
-            filter: blur(18px);
-            animation: splashLight 5s ease-in-out infinite;
-            pointer-events: none;
-            z-index: -1;
+            display: none;
         }
 
         #splashScreen .splash-copy:first-of-type {
@@ -291,6 +270,7 @@
         }
 
         .cinematic-splash .ambient-glow {
+            display: none;
             position: absolute;
             width: min(78vw, 620px);
             height: min(78vw, 620px);
@@ -302,6 +282,40 @@
             animation: splashLight 4s ease-in-out infinite;
         }
 
+        .bg-paghdi-watermark {
+            display: none;
+            position: absolute;
+            width: 90vmin;
+            height: 90vmin;
+            max-width: 650px;
+            max-height: 650px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 2;
+            filter: blur(1px);
+            animation: paghdiAura 6s ease-in-out infinite alternate;
+        }
+
+        .bg-paghdi-watermark svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes paghdiAura {
+            0% {
+                transform: translate(-50%, -50%) scale(.95);
+                opacity: .6;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1.06);
+                opacity: .95;
+            }
+        }
+
         .dupatta-wave {
             position: absolute;
             width: min(42vw, 520px);
@@ -310,7 +324,7 @@
             left: -58vw;
             opacity: .9;
             filter: drop-shadow(0 20px 28px rgba(0, 0, 0, .8));
-            animation: silkWaveGlide 4.2s cubic-bezier(.22, 1, .36, 1) forwards;
+            animation: silkWaveGlide 5s cubic-bezier(.22, 1, .36, 1) forwards;
         }
 
         @keyframes silkWaveGlide {
@@ -331,6 +345,7 @@
         }
 
         .final-flash {
+            display: none;
             position: absolute;
             inset: 0;
             background: radial-gradient(circle at center, rgba(255, 235, 170, .85), rgba(212, 175, 55, .2) 45%, transparent 78%);
@@ -360,7 +375,7 @@
             text-align: center;
             opacity: 0;
             transform: scale(.84) translateY(20px);
-            animation: cinematicBrandReveal 1.3s cubic-bezier(.16, 1, .3, 1) 1.15s forwards;
+            animation: cinematicBrandReveal .9s cubic-bezier(.16, 1, .3, 1) 1.2s forwards;
         }
 
         @keyframes cinematicBrandReveal {
@@ -371,6 +386,7 @@
         }
 
         .cinematic-logo {
+            position: relative;
             width: clamp(168px, 34vw, 228px);
             height: clamp(168px, 34vw, 228px);
             padding: 8px;
@@ -379,7 +395,26 @@
             background: radial-gradient(circle, #201a0e, #000 85%);
             border: 2px solid rgba(212, 175, 55, .72);
             box-shadow: 0 0 42px rgba(212, 175, 55, .42), 0 20px 40px rgba(0, 0, 0, .85);
-            animation: pulseGlow 2.8s ease-in-out infinite;
+            animation: pulseGlow 2.8s ease-in-out 2.1s 1 both;
+        }
+
+        .cinematic-logo::after {
+            content: "";
+            position: absolute;
+            inset: -22px;
+            border-radius: 36px;
+            background: radial-gradient(circle, rgba(255, 232, 151, .48), rgba(212, 175, 55, .16) 42%, transparent 72%);
+            filter: blur(12px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+            animation: logoFlash 1.1s ease-out 2.1s 1 both;
+        }
+
+        @keyframes logoFlash {
+            0% { opacity: 0; transform: scale(.72); }
+            35% { opacity: .9; transform: scale(1.08); }
+            100% { opacity: 0; transform: scale(1.28); }
         }
 
         .cinematic-logo img {
@@ -397,7 +432,7 @@
             font-weight: 700;
             letter-spacing: 2px;
             text-shadow: 0 0 18px rgba(212, 175, 55, .35);
-            animation: introCopy .9s ease 2s both;
+            animation: introCopy .8s ease 2.5s both;
         }
 
         .cinematic-brand-subtitle {
@@ -408,7 +443,7 @@
             font-weight: 600;
             letter-spacing: 3px;
             text-transform: uppercase;
-            animation: introCopy .9s ease 2.25s both;
+            animation: introCopy .8s ease 2.8s both;
         }
 
         .cinematic-cities {
@@ -418,7 +453,101 @@
             font-weight: 600;
             letter-spacing: 4px;
             text-transform: uppercase;
-            animation: introCopy .9s ease 2.5s both;
+            animation: introCopy .8s ease 3.1s both;
+        }
+
+        .royal-enter-btn {
+            margin-top: 18px;
+            background: linear-gradient(135deg, rgba(212, 175, 55, .2), rgba(138, 90, 16, .4));
+            border: 1.5px solid #d4af37;
+            color: #fff2b2;
+            padding: 10px 26px;
+            border-radius: 9999px;
+            font-family: 'Cinzel', serif;
+            font-size: .95rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(212, 175, 55, .35);
+            transition: all .3s ease;
+        }
+
+        .royal-enter-btn:hover {
+            background: #d4af37;
+            color: #1a0508;
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 0 30px rgba(212, 175, 55, .7);
+        }
+
+        .product-slider {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 12px;
+            touch-action: pan-y;
+            background: #f7f3ed;
+        }
+
+        .slider-track {
+            display: flex;
+            width: 100%;
+            transition: transform .35s cubic-bezier(.25, 1, .5, 1);
+            will-change: transform;
+        }
+
+        .slider-img {
+            width: 100%;
+            height: 20rem;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            z-index: 10;
+            display: flex;
+            width: 32px;
+            height: 32px;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(-50%);
+            border: 1px solid rgba(212, 175, 55, .4);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, .6);
+            color: #d4af37;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .slider-prev {
+            left: 8px;
+        }
+
+        .slider-next {
+            right: 8px;
+        }
+
+        .slider-dots {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            z-index: 10;
+            display: flex;
+            gap: 6px;
+            transform: translateX(-50%);
+        }
+
+        .slider-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .4);
+        }
+
+        .slider-dot.active {
+            width: 16px;
+            border-radius: 4px;
+            background: #d4af37;
         }
 
         .gold-sweep {
@@ -461,30 +590,6 @@
         .reveal-item.revealed {
             opacity: 1;
             transform: translateY(0);
-        }
-
-        .reveal-item.revealed .media-card {
-            animation: cardRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        .reveal-item.revealed .media-card:nth-child(2) {
-            animation-delay: 0.08s;
-        }
-
-        .reveal-item.revealed .media-card:nth-child(3) {
-            animation-delay: 0.16s;
-        }
-
-        .reveal-item.revealed .media-card:nth-child(4) {
-            animation-delay: 0.24s;
-        }
-
-        .reveal-item.revealed .media-card:nth-child(5) {
-            animation-delay: 0.32s;
-        }
-
-        .reveal-item.revealed .media-card:nth-child(6) {
-            animation-delay: 0.4s;
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -584,6 +689,122 @@
             box-shadow: 0 12px 32px rgba(84, 18, 30, 0.08);
         }
 
+        .media-card {
+            box-shadow: 0 10px 28px rgba(84, 18, 30, 0.045);
+            animation: cardRise .7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .media-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .media-card:nth-child(2) { animation-delay: .08s; }
+        .media-card:nth-child(3) { animation-delay: .16s; }
+        .media-card:nth-child(4) { animation-delay: .24s; }
+        .media-card:nth-child(5) { animation-delay: .32s; }
+        .media-card:nth-child(6) { animation-delay: .4s; }
+
+        .lookbook-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            overflow-x: hidden;
+            padding: .5rem .15rem 1rem;
+        }
+
+        .lookbook-row > .media-card {
+            min-width: 0;
+        }
+
+        .skeleton-media {
+            position: relative;
+            overflow: hidden;
+            background: #eee8df;
+        }
+
+        .skeleton-media::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.65), transparent);
+            animation: none;
+        }
+
+        .skeleton-media.media-visible::after {
+            animation: skeletonSweep 1.25s ease-out 2 both;
+        }
+
+        @keyframes skeletonSweep {
+            to { transform: translateX(100%); }
+        }
+
+        .trust-badge {
+            border: 1px solid rgba(197,160,89,.3);
+            background: rgba(255,255,255,.86);
+            box-shadow: 0 10px 24px rgba(84,18,30,.05);
+        }
+
+        .mobile-action-bar {
+            display: none;
+        }
+
+        .glass-surface {
+            background: rgba(255, 255, 255, .72);
+            border: 1px solid rgba(255, 255, 255, .7);
+            box-shadow: 0 18px 45px rgba(84, 18, 30, .08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: auto -20% -30% auto;
+            width: 55vw;
+            height: 55vw;
+            max-width: 760px;
+            max-height: 760px;
+            z-index: -1;
+            pointer-events: none;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(197,160,89,.14), rgba(104,34,161,.05) 42%, transparent 70%);
+            transform: translate3d(0, calc(var(--scroll-depth, 0px) * -.12), 0);
+            transition: transform .25s ease-out;
+        }
+
+        .dopamine-accent {
+            background: linear-gradient(135deg, #54121e 0%, #8b284b 48%, #c5a059 100%);
+        }
+
+        .guided-assistant {
+            position: fixed;
+            right: 1rem;
+            bottom: 5.25rem;
+            z-index: 55;
+            width: min(310px, calc(100vw - 2rem));
+            padding: 1rem;
+            border-radius: 1.25rem;
+        }
+
+        .guided-assistant[hidden] { display: none; }
+
+        .luxury-board {
+            position: relative;
+            box-shadow: 0 18px 42px rgba(84, 18, 30, 0.06);
+        }
+
+        .luxury-board::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 1.75rem;
+            right: 1.75rem;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--live-accent), transparent);
+            opacity: .75;
+        }
+
         #inquiryForm label,
         #inquiryForm input,
         #inquiryForm select,
@@ -632,21 +853,40 @@
                 letter-spacing: 0.1em;
                 font-size: 9px;
             }
+
+            .slider-img {
+                height: 18rem;
+            }
+
+            .slider-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .lookbook-row { grid-template-columns: minmax(0, 1fr); margin-inline: -.25rem; }
+
+            .guided-assistant {
+                bottom: 5.1rem;
+                right: .75rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .media-card, .skeleton-media::after { animation: none; }
         }
     </style>
 </head>
 
 <body
-    class="bg-softBg text-deepCharcoal font-sans antialiased selection:bg-champagneGold selection:text-white overflow-x-hidden">
-
+    class="bg-softBg text-deepCharcoal font-sans antialiased selection:bg-champagneGold selection:text-white overflow-x-hidden"
+    style="--live-primary: {{ design.primary_color }}; --live-accent: {{ design.accent_color }}; --live-background: {{ design.background_color }};">
     <!-- Royal Intro Splash -->
     <div id="splashScreen"
         class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center transition-opacity duration-700">
         <div class="cinematic-splash">
-            <div class="ambient-glow"></div>
-            <div class="dupatta-wave">
-                <svg viewBox="0 0 500 800" width="100%" height="100%" fill="none" preserveAspectRatio="none"
-                    aria-hidden="true">
+            <div class="dupatta-wave" aria-hidden="true">
+                <svg viewBox="0 0 500 800" width="100%" height="100%" fill="none"
+                    preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="silkFabric" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#4a0812" />
@@ -663,33 +903,28 @@
                     <path
                         d="M80 0C180 180 20 380 160 580C240 700 320 780 420 800H480C380 750 310 650 240 540C130 360 270 190 160 0Z"
                         fill="url(#silkFabric)" opacity=".94" />
-                    <path d="M80 0C180 180 20 380 160 580C240 700 320 780 420 800" stroke="url(#zariGold)"
-                        stroke-width="12" stroke-linecap="round" />
-                    <path d="M160 0C270 190 130 360 240 540C310 650 380 750 480 800" stroke="url(#zariGold)"
-                        stroke-width="12" stroke-linecap="round" />
+                    <path d="M80 0C180 180 20 380 160 580C240 700 320 780 420 800"
+                        stroke="url(#zariGold)" stroke-width="12" stroke-linecap="round" />
+                    <path d="M160 0C270 190 130 360 240 540C310 650 380 750 480 800"
+                        stroke="url(#zariGold)" stroke-width="12" stroke-linecap="round" />
                     <circle cx="150" cy="270" r="14" fill="url(#zariGold)" opacity=".8" />
                     <circle cx="210" cy="440" r="14" fill="url(#zariGold)" opacity=".8" />
                 </svg>
             </div>
-            <div class="final-flash"></div>
         </div>
         <div class="cinematic-brand px-4">
             <div class="cinematic-logo"><img src="{{ logo_url }}" alt="Shivbhavani royal logo"></div>
             <h1 class="cinematic-brand-title">Shivbhavani Safa Paghdi</h1>
             <h2 class="cinematic-brand-subtitle">Wedding Accessories Palace</h2>
             <p class="cinematic-cities">Bhavnagar | Surat</p>
+            <button class="royal-enter-btn" type="button" onclick="exitIntro()">
+                <span>Explore Royal Collection &rarr;</span>
+            </button>
         </div>
     </div>
 
-    <!-- Announcement Bar -->
-    <div
-        class="bg-velvetWine text-softGold text-xs py-2 px-4 text-center tracking-widest font-medium border-b border-champagneGold/20 flex flex-wrap justify-center items-center gap-4">
-        <span>👑 Shivbhavani Safa Paghdi • Bhavnagar & Surat</span>
-        <span>• Direct Contact: <strong>+91 99252 45246</strong></span>
-    </div>
-
     <!-- Header Navigation -->
-    <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-stone-200 shadow-xs">
+    <header class="glass-surface sticky top-0 z-50 border-b border-stone-200 shadow-xs">
         <div class="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 py-3 flex justify-between items-center gap-3 sm:gap-4">
             <a href="#" class="royal-brand group flex shrink-0">
                 <span class="brand-badge">
@@ -715,16 +950,16 @@
             </nav>
 
             <div class="flex items-center gap-3">
-                <a href="https://instagram.com/shivbhavani_safa_bhavnagar" target="_blank" rel="noopener noreferrer"
+                <a href="https://instagram.com/{{ business.instagram }}" target="_blank" rel="noopener noreferrer"
                     aria-label="Visit Shivbhavani on Instagram" title="Visit Instagram"
                     class="header-social-action text-stone-600 hover:text-pink-600 text-lg transition">
                     <i class="fab fa-instagram"></i>
                 </a>
-                <a href="https://wa.me/919925245246?text=Hello,%20I%20would%20like%20to%20inquire%20about%20Safa%20and%20Paghdi%20pricing."
+                <a href="https://wa.me/{{ business.phone }}?text=Hello,%20I%20would%20like%20to%20inquire%20about%20Safa%20and%20Paghdi%20pricing."
                     target="_blank" rel="noopener noreferrer" aria-label="Chat with Shivbhavani on WhatsApp"
                     title="Chat on WhatsApp"
-                    class="header-social-action bg-velvetWine hover:bg-softWine text-softGold text-xl border border-champagneGold/40 shadow-xs transition">
-                    <i class="fab fa-whatsapp text-green-400"></i>
+                    class="header-social-action bg-emerald-600 hover:bg-emerald-700 text-white text-xl border border-emerald-700 shadow-xs transition">
+                    <i class="fab fa-whatsapp text-white"></i>
                 </a>
             </div>
         </div>
@@ -739,11 +974,10 @@
                 <i class="fas fa-crown text-[10px]"></i> Traditional • Royal • Premium
             </span>
             <h1 class="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold text-velvetWine leading-[1.2] mb-6">
-                Royal Elegance. <br class="hidden sm:inline">
-                <span class="italic font-normal text-champagneGold">Authentic Heritage.</span>
+                {{ business.headline|replace('.', '.<br class="hidden sm:inline">', 1)|safe }}
             </h1>
             <p class="text-mutedText text-sm sm:text-base lg:text-lg max-w-2xl mx-auto mb-8 font-light">
-                Bhavnagar's premier destination for custom wedding turbans and royal groom accessories.
+                {{ business.announcement }}
             </p>
             <div class="flex flex-wrap justify-center items-center gap-4">
                 <a href="#inquiry"
@@ -760,7 +994,7 @@
 
     <!-- Dynamic Collection & Reels Gallery -->
     <section id="collection" data-aos="fade-up" data-aos-duration="850"
-        class="py-16 bg-white px-4 border-y border-stone-200 reveal-item">
+        class="py-16 glass-surface px-4 border-y border-stone-200 reveal-item">
         <div class="max-w-6xl mx-auto">
             <div class="text-center max-w-xl mx-auto mb-10">
                 <span class="text-xs font-bold uppercase tracking-widest text-warmGoldText block mb-1">Exclusive
@@ -780,19 +1014,48 @@
                     <button onclick="filterMedia('image', event)"
                         class="filter-btn bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-4 py-1.5 rounded-full font-medium transition"
                         data-filter="image">Photos</button>
+                    <button onclick="filterAvailability(event)"
+                        class="filter-btn bg-stone-100 text-stone-700 hover:bg-stone-200 text-xs px-4 py-1.5 rounded-full font-medium transition"
+                        data-filter="available">Available Now</button>
+                </div>
+                <div class="max-w-md mx-auto mt-4 relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-xs"></i>
+                    <input id="catalogSearch" type="search" placeholder="Search safa, talwar, kalgi, colour..."
+                        class="w-full rounded-full border border-stone-200 bg-white py-2.5 pl-9 pr-4 text-xs text-stone-700 outline-none focus:border-champagneGold">
+                </div>
+            </div>
+
+            <div class="mb-8 rounded-3xl border border-champagneGold/25 glass-surface p-5 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-warmGoldText">Style Finder</span>
+                        <h3 class="font-serif text-xl font-bold text-velvetWine">Match your sherwani colour</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2" id="colorMatcher">
+                        <button type="button" data-color="all" class="matcher-btn bg-velvetWine text-white px-3 py-1.5 rounded-full text-xs font-semibold">All Looks</button>
+                        <button type="button" data-color="ivory" class="matcher-btn bg-white border border-stone-200 text-stone-700 px-3 py-1.5 rounded-full text-xs font-semibold">Ivory</button>
+                        <button type="button" data-color="maroon" class="matcher-btn bg-white border border-stone-200 text-stone-700 px-3 py-1.5 rounded-full text-xs font-semibold">Maroon</button>
+                        <button type="button" data-color="pastel" class="matcher-btn bg-white border border-stone-200 text-stone-700 px-3 py-1.5 rounded-full text-xs font-semibold">Pastel Pink</button>
+                        <button type="button" data-color="emerald" class="matcher-btn bg-white border border-stone-200 text-stone-700 px-3 py-1.5 rounded-full text-xs font-semibold">Emerald</button>
+                    </div>
                 </div>
             </div>
 
             <!-- Dynamic Media Grid -->
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="mediaGrid">
+            <div class="lookbook-row gap-6" id="mediaGrid">
                 {% for item in items %}
                 <div data-aos="zoom-in" data-aos-duration="650"
                     class="media-card bg-softBg rounded-2xl overflow-hidden border border-stone-200 hover:border-champagneGold/60 hover:shadow-md transition-all flex flex-col justify-between"
                     data-type="{{ item.type }}" data-title="{{ item.title }}" data-category="{{ item.category }}"
                     data-url="{{ item.url }}" data-badge="{{ item.badge|default('Royal Look') }}"
-                    data-featured="{{ item.featured|default(false)|lower }}" onclick="openDetailModal(this)">
+                    data-price-label="{{ item.price_label|default('') }}"
+                    data-featured="{{ item.featured|default(false)|lower }}"
+                    data-availability="{{ item.availability|default('Available')|lower }}"
+                    data-colors="{{ (item.colors|default('') ~ ' ' ~ item.category ~ ' ' ~ item.title)|lower }}"
+                    data-images='{{ item.images|default([])|tojson }}'
+                    onclick="openDetailModal(this)">
 
-                    <div class="relative bg-stone-900 overflow-hidden flex items-center justify-center">
+                    <div class="relative bg-stone-900 overflow-hidden flex items-center justify-center skeleton-media">
                         {% if item.type == 'video' %}
                         <div class="reel-frame w-full overflow-hidden bg-black">
                             <video src="{{ item.url }}" controls playsinline preload="metadata"
@@ -803,9 +1066,28 @@
                             <i class="fas fa-play text-[8px] text-champagneGold"></i> Reel
                         </span>
                         {% else %}
-                        <!-- Image Display -->
+                        {% if item.images and item.images|length > 1 %}
+                        <div class="product-slider" data-index="0">
+                            <div class="slider-track">
+                                {% for image in item.images %}
+                                <img src="{{ image.url if image is mapping else image }}" class="slider-img w-full h-80"
+                                    alt="{{ item.title }} - view {{ loop.index }}">
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="slider-btn slider-prev" aria-label="Previous photo"
+                                onclick="event.stopPropagation(); slideGallery(this, -1)">&lsaquo;</button>
+                            <button type="button" class="slider-btn slider-next" aria-label="Next photo"
+                                onclick="event.stopPropagation(); slideGallery(this, 1)">&rsaquo;</button>
+                            <div class="slider-dots" aria-label="Photo views">
+                                {% for image in item.images %}
+                                <div class="slider-dot{% if loop.first %} active{% endif %}"></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
                         <img src="{{ item.url }}" alt="{{ item.title }}"
                             class="w-full h-80 object-cover hover:scale-105 transition-transform duration-500">
+                        {% endif %}
                         <span
                             class="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[10px] px-2.5 py-1 rounded-full font-medium flex items-center gap-1">
                             <i class="fas fa-camera text-[8px] text-champagneGold"></i> Photo
@@ -823,15 +1105,41 @@
 
                     <div class="p-4 bg-white">
                         <h4 class="font-serif font-bold text-base text-deepCharcoal">{{ item.title }}</h4>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="text-[10px] font-semibold rounded-full px-2 py-1 bg-emerald-50 text-emerald-700">
+                                {{ item.availability|default('Available') }}
+                            </span>
+                            {% if item.price_label %}
+                            <span class="text-[10px] font-semibold rounded-full px-2 py-1 bg-amber-50 text-amber-800">
+                                {{ item.price_label }}
+                            </span>
+                            {% endif %}
+                            {% if item.colors %}
+                            <span class="text-[10px] font-semibold rounded-full px-2 py-1 bg-stone-100 text-stone-700">
+                                {{ item.colors }}
+                            </span>
+                            {% endif %}
+                        </div>
                         {% if item.description %}
                         <p class="text-xs text-mutedText mt-1 line-clamp-2">{{ item.description }}</p>
                         {% endif %}
                         <div class="mt-3 flex justify-between items-center pt-2 border-t border-stone-100">
                             <span class="text-[11px] text-stone-500 font-medium">Rent & Sale</span>
-                            <a href="#inquiry" onclick="event.stopPropagation()"
+                            <a href="#inquiry" onclick="event.stopPropagation(); setInquiryProduct('{{ item.title|e }}')"
                                 class="text-xs font-semibold text-velvetWine hover:text-champagneGold transition">Inquire
                                 Now &rarr;</a>
                         </div>
+                        <button type="button"
+                            data-cart-item="{{ {'title': item.title, 'category': item.category, 'colors': item.colors|default(''), 'availability': item.availability|default('Available'), 'price_label': item.price_label|default(''), 'url': item.url}|tojson|e }}"
+                            onclick="event.stopPropagation(); toggleInquiryItem(this)"
+                            class="mt-2 w-full rounded-lg border border-champagneGold/60 text-velvetWine py-2 px-2 text-[10px] font-bold transition hover:bg-softGold/30">
+                            <i class="fas fa-plus mr-1"></i> Add to Inquiry
+                        </button>
+                        <a href="https://wa.me/{{ business.phone }}?text={{ ('Hello, I would like to enquire about ' ~ item.title ~ '. Colour: ' ~ item.colors|default('Not specified') ~ '. Availability: ' ~ item.availability|default('Available') ~ '. ' ~ item.price_label|default('') ~ '. Photo: ' ~ item.url)|urlencode }}"
+                            target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()"
+                            class="mt-3 flex w-full min-w-0 items-center justify-center gap-1 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white py-2 px-2 text-center text-[10px] sm:text-[11px] leading-tight font-bold transition whitespace-nowrap">
+                            <i class="fab fa-whatsapp shrink-0"></i><span>Enquire on WhatsApp</span>
+                        </a>
                     </div>
 
                 </div>
@@ -845,6 +1153,33 @@
                         reels.</p>
                 </div>
                 {% endif %}
+                <div id="colourEmptyState"
+                    class="hidden col-span-full rounded-2xl border border-dashed border-champagneGold/50 bg-softBg px-6 py-8 text-center">
+                    <i class="fas fa-palette text-2xl text-champagneGold mb-2"></i>
+                    <strong class="block font-serif text-lg text-velvetWine"></strong>
+                    <p class="text-xs text-mutedText mt-1">Use the colour tags in Admin when uploading a new look.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quality and hygiene trust badges -->
+    <section class="py-10 px-4 max-w-6xl mx-auto">
+        <div class="grid sm:grid-cols-3 gap-4">
+            <div class="trust-badge rounded-2xl p-5 text-center">
+                <i class="fas fa-sparkles text-2xl text-champagneGold mb-2"></i>
+                <h3 class="font-serif font-bold text-velvetWine">Clean & Ready</h3>
+                <p class="text-xs text-mutedText mt-1">Rental items are professionally cleaned before use.</p>
+            </div>
+            <div class="trust-badge rounded-2xl p-5 text-center">
+                <i class="fas fa-user-check text-2xl text-champagneGold mb-2"></i>
+                <h3 class="font-serif font-bold text-velvetWine">Fitting Support</h3>
+                <p class="text-xs text-mutedText mt-1">On-head fitting guidance for a comfortable royal finish.</p>
+            </div>
+            <div class="trust-badge rounded-2xl p-5 text-center">
+                <i class="fas fa-medal text-2xl text-champagneGold mb-2"></i>
+                <h3 class="font-serif font-bold text-velvetWine">Heritage Craft</h3>
+                <p class="text-xs text-mutedText mt-1">Thoughtful fabrics and detailing for memorable ceremonies.</p>
             </div>
         </div>
     </section>
@@ -859,7 +1194,17 @@
                 <i class="fas fa-times text-sm"></i>
             </button>
             <div id="modalMediaBox"
-                class="w-full bg-black flex items-center justify-center max-h-[60vh] overflow-hidden"></div>
+                class="relative w-full bg-black flex items-center justify-center max-h-[60vh] overflow-hidden touch-pan-y">
+                <button id="modalPrevBtn" type="button" aria-label="Previous image"
+                    class="absolute left-3 top-1/2 z-10 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 text-white text-2xl hover:bg-black transition hidden">
+                    &lsaquo;
+                </button>
+                <button id="modalNextBtn" type="button" aria-label="Next image"
+                    class="absolute right-3 top-1/2 z-10 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 text-white text-2xl hover:bg-black transition hidden">
+                    &rsaquo;
+                </button>
+            </div>
+            <div id="modalImageStatus" class="hidden bg-black text-white/80 text-center text-xs py-2"></div>
             <div class="p-6 bg-white">
                 <div class="flex items-center gap-2 mb-2">
                     <span id="modalCategory"
@@ -869,6 +1214,7 @@
                         Look</span>
                 </div>
                 <h3 id="modalTitle" class="font-serif text-2xl font-bold text-deepCharcoal mb-2">Item Title</h3>
+                <div id="modalMeta" class="flex flex-wrap gap-2 mb-3"></div>
                 <p class="text-stone-500 text-xs leading-relaxed">Handcrafted with authentic royal finishing. Available
                     for rental and purchase. Connect directly for color options, fabric inquiries, and custom sizing.
                 </p>
@@ -876,6 +1222,10 @@
                     <button id="modalWhatsAppBtn"
                         class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition shadow">
                         <i class="fab fa-whatsapp text-base"></i> Inquire on WhatsApp
+                    </button>
+                    <button id="modalAddInquiryBtn" type="button"
+                        class="bg-softGold hover:bg-champagneGold text-velvetWine px-4 rounded-xl text-xs font-semibold">
+                        Add to Inquiry
                     </button>
                     <button onclick="closeDetailModal()"
                         class="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 rounded-xl text-xs font-semibold">Close</button>
@@ -886,7 +1236,7 @@
 
     <!-- Inquiry Form -->
     <section id="inquiry" data-aos="fade-up" data-aos-duration="850" class="py-16 px-4 max-w-3xl mx-auto reveal-item">
-        <div class="bg-white rounded-3xl shadow-sm border border-champagneGold/30 p-8 sm:p-10">
+        <div class="glass-surface rounded-3xl shadow-sm border border-champagneGold/30 p-8 sm:p-10">
             <div class="text-center mb-8">
                 <span class="text-xs font-bold uppercase tracking-widest text-warmGoldText block mb-1">Pricing &
                     Availability</span>
@@ -896,6 +1246,13 @@
             </div>
 
             <form id="inquiryForm" class="space-y-4">
+                <div id="selectedInquiryItems" class="hidden rounded-xl border border-champagneGold/40 bg-amber-50 p-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-bold text-velvetWine">Selected products <span id="selectedInquiryCount" class="ml-1 rounded-full bg-velvetWine px-1.5 py-0.5 text-[9px] text-white">0</span></span>
+                        <button type="button" onclick="clearInquiryItems()" class="text-[10px] text-stone-500 hover:text-velvetWine">Clear all</button>
+                    </div>
+                    <div id="selectedInquiryList" class="flex flex-wrap gap-2 mt-2"></div>
+                </div>
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-deepCharcoal mb-1">Full Name *</label>
@@ -956,6 +1313,8 @@
                     </button>
                 </div>
 
+                <p id="availabilityMsg" class="hidden text-center text-xs rounded-lg bg-amber-50 text-amber-900 border border-amber-200 p-2"></p>
+
                 <div id="formMsg"
                     class="hidden text-center text-xs sm:text-sm font-medium p-3 rounded-xl bg-green-50 text-green-900 border border-green-200 mt-3">
                 </div>
@@ -965,7 +1324,7 @@
 
     <!-- Customer Reviews -->
     <section id="reviews" data-aos="fade-up" data-aos-duration="850"
-        class="py-16 px-4 bg-white border-y border-stone-200 reveal-item">
+        class="py-16 px-4 glass-surface border-y border-stone-200 reveal-item">
         <div class="max-w-5xl mx-auto text-center">
             <span class="text-xs font-bold uppercase tracking-widest text-warmGoldText block mb-1">Customer Love</span>
             <h2 class="font-serif text-3xl font-bold text-velvetWine">Reviews from Our Royal Family</h2>
@@ -1025,7 +1384,7 @@
                         Review</span>
                 </article>
             </div>
-            <a href="https://wa.me/919925245246?text=Hello%2C%20I%20would%20like%20to%20share%20a%20review%20about%20my%20Shivbhavani%20experience."
+            <a href="https://wa.me/{{ business.phone }}?text=Hello%2C%20I%20would%20like%20to%20share%20a%20review%20about%20my%20Shivbhavani%20experience."
                 target="_blank" rel="noopener noreferrer"
                 class="inline-flex items-center gap-2 mt-8 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-5 py-3 rounded-xl text-sm shadow transition">
                 <i class="fab fa-whatsapp text-lg"></i> Share Your Review
@@ -1035,8 +1394,8 @@
 
     <!-- About Us -->
     <section id="about" data-aos="fade-up" data-aos-duration="850" class="py-16 px-4 max-w-6xl mx-auto reveal-item">
-        <div class="grid md:grid-cols-2 gap-10 items-center">
-            <div>
+        <div class="grid md:grid-cols-2 gap-8 items-start">
+            <div class="luxury-board rounded-3xl border border-champagneGold/25 bg-white p-7 shadow-sm">
                 <span class="text-xs font-bold uppercase tracking-widest text-warmGoldText mb-2 block">Our
                     Tradition</span>
                 <h2 class="font-serif text-3xl font-bold text-velvetWine mb-4">About Shivbhavani</h2>
@@ -1059,31 +1418,40 @@
                         packages to suit every budget.</p>
                 </div>
             </div>
-            <div
-                class="relative overflow-hidden rounded-3xl border border-champagneGold/30 bg-gradient-to-br from-velvetWine via-softWine to-deepCharcoal p-8 text-center text-white shadow-lg">
-                <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full border border-champagneGold/30"></div>
-                <div class="absolute -left-12 -bottom-20 h-44 w-44 rounded-full border border-softGold/20"></div>
-                <div class="relative">
-                    <div
-                        class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-champagneGold/50">
-                        <i class="fas fa-crown text-2xl text-softGold"></i>
+            <div class="luxury-board rounded-3xl border border-stone-200 bg-softBg p-7 shadow-sm">
+                <span class="text-xs font-bold uppercase tracking-widest text-warmGoldText mb-2 block">Our Promise</span>
+                <h3 class="font-serif text-2xl font-bold text-velvetWine mb-4">Royal styling, made personal</h3>
+                <p class="text-sm text-mutedText leading-relaxed mb-6">
+                    Every look is prepared around your ceremony, outfit, colour palette, and comfort. Our team helps you
+                    choose the right style and completes the finish with calm, precise service.
+                </p>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="rounded-2xl bg-white border border-stone-200 p-4">
+                        <i class="fas fa-crown text-xl text-champagneGold mb-2"></i>
+                        <p class="text-xs font-bold text-deepCharcoal">Royal Finish</p>
                     </div>
-                    <h3 class="font-serif text-2xl font-bold text-softGold mb-2">Why Choose Us</h3>
-                    <div class="text-white/75 text-xs sm:text-sm leading-relaxed text-left space-y-2">
-                        <p><strong class="text-softGold">Master Tying & Fit:</strong> All-day comfort with precise
-                            draping techniques.</p>
-                        <p><strong class="text-softGold">Custom Coordination:</strong> Matched to your wedding theme and
-                            bridal attire.</p>
-                        <p><strong class="text-softGold">Complete Packages:</strong> Full styling solutions for the
-                            groom and wedding party.</p>
-                    </div>
-                    <div class="mt-5 pt-4 border-t border-white/15 text-left text-xs text-white/75">
-                        <p class="font-bold text-softGold mb-1">Visit Us</p>
-                        <p>105, Avadh Residency, Dairy Road, Jewel Circle, Opp. Joggers Park, Bhavnagar Para, Bhavnagar
-                            - 364003, Gujarat</p>
-                        <p class="mt-2"><i class="fas fa-phone text-champagneGold mr-1"></i> +91 99252 45246</p>
+                    <div class="rounded-2xl bg-white border border-stone-200 p-4">
+                        <i class="fas fa-ruler-combined text-xl text-champagneGold mb-2"></i>
+                        <p class="text-xs font-bold text-deepCharcoal">Perfect Fit</p>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6 mt-6">
+            <div class="luxury-board rounded-3xl border border-champagneGold/30 bg-white px-7 py-6 shadow-sm">
+                <h3 class="font-serif text-xl font-bold text-velvetWine mb-3">Why Choose Us</h3>
+                <div class="grid sm:grid-cols-3 gap-4 text-xs leading-relaxed text-mutedText">
+                    <p><strong class="block text-warmGoldText mb-1">Master Tying</strong>All-day comfort with precise draping.</p>
+                    <p><strong class="block text-warmGoldText mb-1">Custom Coordination</strong>Matched to your wedding theme.</p>
+                    <p><strong class="block text-warmGoldText mb-1">Complete Packages</strong>Styling for the groom and party.</p>
+                </div>
+            </div>
+            <div class="luxury-board rounded-3xl border border-champagneGold/35 bg-white px-7 py-6 shadow-sm">
+                <h3 class="font-serif text-xl font-bold text-velvetWine mb-3">Visit Us</h3>
+                <p class="text-xs text-mutedText leading-relaxed">
+                    105, Avadh Residency, Dairy Road, Jewel Circle, Opp. Joggers Park, Bhavnagar Para, Bhavnagar - 364003, Gujarat
+                </p>
+                <p class="mt-3 text-xs font-bold text-deepCharcoal"><i class="fas fa-phone text-champagneGold mr-1"></i> +91 99252 45246</p>
             </div>
         </div>
     </section>
@@ -1165,10 +1533,10 @@
                 Specialized in bridal and royal groom couture, custom turbans, and on-venue safa services in Bhavnagar
                 and Surat.
             </p>
-            <div class="flex justify-center gap-4 mb-6">
-                <a href="https://instagram.com/shivbhavani_safa_bhavnagar" target="_blank"
+            <div class="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-6">
+                <a href="https://instagram.com/{{ business.instagram }}" target="_blank"
                     class="text-stone-400 hover:text-pink-400 text-base">
-                    <i class="fab fa-instagram"></i> @shivbhavani_safa_bhavnagar
+                    <i class="fab fa-instagram"></i> @{{ business.instagram }}
                 </a>
                 <a href="/admin" class="text-stone-500 hover:text-stone-300 text-xs flex items-center gap-1">
                     <i class="fas fa-lock text-[10px]"></i> Admin Portal
@@ -1176,8 +1544,9 @@
             </div>
             <div class="pt-6 border-t border-stone-800 flex flex-col sm:flex-row justify-between items-center gap-2">
                 <p>&copy; 2026 Shivbhavani Safa Paghdi. All rights reserved.</p>
-                <p class="text-stone-300">
-                    Designed & Developed by <span class="text-champagneGold font-semibold">Hit Savani</span>
+                <p class="text-stone-300 inline-flex items-center gap-2">
+                    <i class="fas fa-code text-champagneGold text-[10px]"></i>
+                    Designed & Developed by <span class="text-champagneGold font-semibold">Hitsavani</span>
                 </p>
             </div>
         </div>
@@ -1185,7 +1554,13 @@
 
     <!-- JavaScript Handlers -->
     <script>
-        const BUSINESS_PHONE = "919925245246"; // Official showroom phone number
+        const BUSINESS_PHONE = "{{ business.phone }}";
+
+        const inquiryItems = [];
+
+        window.addEventListener('scroll', () => {
+            document.documentElement.style.setProperty('--scroll-depth', `${window.scrollY}px`);
+        }, { passive: true });
 
         window.addEventListener('load', () => {
             const splash = document.getElementById('splashScreen');
@@ -1198,16 +1573,42 @@
                     splash.style.opacity = '0';
                     setTimeout(() => splash.style.display = 'none', 700);
                 }
-            }, 4300);
+            }, 5600);
         });
+
+        function exitIntro() {
+            const splash = document.getElementById('splashScreen');
+            if (!splash) return;
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.display = 'none';
+                document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' });
+            }, 700);
+        }
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.classList.add('revealed');
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                    observer.unobserve(entry.target);
+                }
             });
         }, { threshold: 0.12 });
 
         document.querySelectorAll('.reveal-item').forEach(element => observer.observe(element));
+
+        const mediaRevealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('media-visible');
+                    mediaRevealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.skeleton-media').forEach(element => {
+            mediaRevealObserver.observe(element);
+        });
 
         // Media Filtering (All, Video Reels, Photos)
         function filterMedia(type, clickEvent) {
@@ -1228,30 +1629,193 @@
             });
         }
 
+        function filterAvailability(clickEvent) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-velvetWine', 'text-white');
+                btn.classList.add('bg-stone-100', 'text-stone-700');
+            });
+            clickEvent.currentTarget.classList.remove('bg-stone-100', 'text-stone-700');
+            clickEvent.currentTarget.classList.add('bg-velvetWine', 'text-white');
+            document.querySelectorAll('.media-card').forEach(card => {
+                const status = card.dataset.availability || 'available';
+                card.style.display = status === 'available' || status === 'by appointment' ? 'flex' : 'none';
+            });
+            document.getElementById('colourEmptyState')?.classList.add('hidden');
+        }
+
+        function setInquiryProduct(title) {
+            const note = document.getElementById('custNote');
+            if (note && !note.value) note.value = `Product of interest: ${title}`;
+            document.getElementById('inquiry')?.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderInquiryItems() {
+            const wrapper = document.getElementById('selectedInquiryItems');
+            const list = document.getElementById('selectedInquiryList');
+            if (!wrapper || !list) return;
+            wrapper.classList.toggle('hidden', inquiryItems.length === 0);
+            const count = document.getElementById('selectedInquiryCount');
+            if (count) count.textContent = inquiryItems.length;
+            list.innerHTML = inquiryItems.map((item, index) =>
+                `<span class="inline-flex items-center gap-1 rounded-full bg-white border border-amber-200 px-2 py-1 text-[10px] text-velvetWine">
+                    ${item.title}
+                    <button type="button" aria-label="Remove ${item.title}" onclick="removeInquiryItem(${index})">×</button>
+                </span>`
+            ).join('');
+        }
+
+        function toggleInquiryItem(button) {
+            const item = JSON.parse(button.dataset.cartItem);
+            const existing = inquiryItems.findIndex(selected => selected.title === item.title && selected.url === item.url);
+            if (existing >= 0) {
+                inquiryItems.splice(existing, 1);
+                button.classList.remove('bg-softGold');
+                button.innerHTML = '<i class="fas fa-plus mr-1"></i> Add to Inquiry';
+            } else {
+                inquiryItems.push(item);
+                button.classList.add('bg-softGold');
+                button.innerHTML = '<i class="fas fa-check mr-1"></i> Added to Inquiry';
+            }
+            renderInquiryItems();
+        }
+
+        function removeInquiryItem(index) {
+            inquiryItems.splice(index, 1);
+            document.querySelectorAll('[data-cart-item]').forEach(button => {
+                const item = JSON.parse(button.dataset.cartItem);
+                const selected = inquiryItems.some(entry => entry.title === item.title && entry.url === item.url);
+                button.classList.toggle('bg-softGold', selected);
+                button.innerHTML = selected
+                    ? '<i class="fas fa-check mr-1"></i> Added to Inquiry'
+                    : '<i class="fas fa-plus mr-1"></i> Add to Inquiry';
+            });
+            renderInquiryItems();
+        }
+
+        function clearInquiryItems() {
+            inquiryItems.splice(0, inquiryItems.length);
+            document.querySelectorAll('[data-cart-item]').forEach(button => {
+                button.classList.remove('bg-softGold');
+                button.innerHTML = '<i class="fas fa-plus mr-1"></i> Add to Inquiry';
+            });
+            renderInquiryItems();
+        }
+
+        function filterByColour(color) {
+            document.querySelectorAll('.matcher-btn').forEach(button => {
+                button.classList.remove('bg-velvetWine', 'text-white');
+                button.classList.add('bg-white', 'text-stone-700');
+            });
+            const active = document.querySelector(`.matcher-btn[data-color="${color}"]`);
+            active?.classList.add('bg-velvetWine', 'text-white');
+            active?.classList.remove('bg-white', 'text-stone-700');
+            document.querySelectorAll('.media-card').forEach(card => {
+                const tags = (card.dataset.colors || '').toLowerCase();
+                const matches = color === 'all' || tags.split(/\s+/).some(tag => tag === color || tag.startsWith(`${color}-`));
+                card.style.display = matches ? 'flex' : 'none';
+            });
+            const emptyState = document.getElementById('colourEmptyState');
+            const visibleCount = Array.from(document.querySelectorAll('.media-card'))
+                .filter(card => getComputedStyle(card).display !== 'none').length;
+            if (emptyState) {
+                emptyState.classList.toggle('hidden', color === 'all' || visibleCount > 0);
+                emptyState.querySelector('strong').textContent = `${color.charAt(0).toUpperCase()}${color.slice(1)} looks are coming soon`;
+            }
+        }
+
+        document.querySelectorAll('.matcher-btn').forEach(button => {
+            button.addEventListener('click', () => filterByColour(button.dataset.color));
+        });
+
+        const catalogSearch = document.getElementById('catalogSearch');
+        if (catalogSearch) {
+            catalogSearch.addEventListener('input', () => {
+                const query = catalogSearch.value.trim().toLowerCase();
+                document.querySelectorAll('.media-card').forEach(card => {
+                    const searchable = [
+                        card.dataset.title,
+                        card.dataset.category,
+                        card.dataset.colors,
+                        card.dataset.availability
+                    ].join(' ').toLowerCase();
+                    card.style.display = !query || searchable.includes(query) ? 'flex' : 'none';
+                });
+                document.getElementById('colourEmptyState')?.classList.add('hidden');
+            });
+        }
+
+        const eventDate = document.getElementById('custDate');
+        const availabilityMsg = document.getElementById('availabilityMsg');
+        if (eventDate && availabilityMsg) {
+            eventDate.min = new Date().toISOString().split('T')[0];
+            eventDate.addEventListener('change', () => {
+                availabilityMsg.classList.remove('hidden');
+                availabilityMsg.textContent = `We will confirm availability for ${eventDate.value} with you on WhatsApp.`;
+            });
+        }
+
+        let modalImages = [];
+        let currentModalImageIndex = 0;
+        let modalTouchStartX = 0;
+
+        function renderModalMedia() {
+            const mediaBox = document.getElementById('modalMediaBox');
+            const status = document.getElementById('modalImageStatus');
+            const image = modalImages[currentModalImageIndex];
+            if (!image) return;
+            mediaBox.querySelectorAll('img, video').forEach(media => media.remove());
+            const mediaUrl = typeof image === 'string' ? image : image.url;
+            const mediaAlt = typeof image === 'string' ? 'Product image' : (image.alt || 'Product image');
+            const media = modalImages.length === 1 && mediaUrl.match(/\.(mp4|webm|mov)(\?|$)/i)
+                ? Object.assign(document.createElement('video'), { src: mediaUrl, controls: true, autoplay: true, playsInline: true })
+                : Object.assign(document.createElement('img'), { src: mediaUrl, alt: mediaAlt });
+            media.className = 'w-full max-h-[55vh] object-contain bg-black';
+            mediaBox.appendChild(media);
+            const multiple = modalImages.length > 1;
+            document.getElementById('modalPrevBtn').classList.toggle('hidden', !multiple);
+            document.getElementById('modalNextBtn').classList.toggle('hidden', !multiple);
+            status.classList.toggle('hidden', !multiple);
+            if (multiple) status.textContent = `${currentModalImageIndex + 1} / ${modalImages.length}`;
+        }
+
+        function changeModalImage(direction) {
+            if (modalImages.length < 2) return;
+            currentModalImageIndex = (currentModalImageIndex + direction + modalImages.length) % modalImages.length;
+            renderModalMedia();
+        }
+
         function openDetailModal(card) {
             const title = card.dataset.title;
             const category = card.dataset.category;
             const type = card.dataset.type;
             const url = card.dataset.url;
             const badge = card.dataset.badge;
+            const colors = card.dataset.colors || 'Not specified';
+            const availability = card.dataset.availability || 'available';
+            const priceLabel = card.dataset.priceLabel || '';
             const modal = document.getElementById('detailModal');
-            const mediaBox = document.getElementById('modalMediaBox');
+            modalImages = JSON.parse(card.dataset.images || '[]');
+            if (!modalImages.length) modalImages = [{ url, alt: title }];
+            currentModalImageIndex = 0;
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalCategory').innerText = category;
             document.getElementById('modalBadge').innerText = badge || 'Royal Look';
-
-            if (type === 'video') {
-                mediaBox.innerHTML = `<video src="${url}" controls autoplay playsinline class="w-full max-h-[55vh] object-contain bg-black"></video>`;
-            } else {
-                mediaBox.innerHTML = `<img src="${url}" alt="${title}" class="w-full max-h-[55vh] object-contain bg-black">`;
-            }
+            document.getElementById('modalMeta').innerHTML =
+                `<span class="rounded-full bg-emerald-50 text-emerald-700 px-2 py-1 text-[10px]">${availability}</span>
+                 <span class="rounded-full bg-stone-100 text-stone-700 px-2 py-1 text-[10px]">${colors}</span>
+                 ${priceLabel ? `<span class="rounded-full bg-amber-50 text-amber-800 px-2 py-1 text-[10px]">${priceLabel}</span>` : ''}`;
+            renderModalMedia();
 
             document.getElementById('modalWhatsAppBtn').onclick = () => {
-                const text = `*Shivbhavani Safa Paghdi Inquiry*%0A` +
-                    `Product: ${encodeURIComponent(title)}%0A` +
-                    `Category: ${encodeURIComponent(category)}%0A` +
-                    `Hello, I would like to inquire about pricing and availability for this item.`;
+                const text = buildWhatsAppMessage([{ title, category, colors, availability, priceLabel, url }]);
                 window.open(`https://wa.me/${BUSINESS_PHONE}?text=${text}`, '_blank');
+            };
+            document.getElementById('modalAddInquiryBtn').onclick = () => {
+                toggleInquiryItem({ dataset: { cartItem: JSON.stringify({ title, category, colors, availability, price_label: priceLabel, url }) },
+                    classList: { add() {}, remove() {} },
+                    innerHTML: '' });
+                closeDetailModal();
+                document.getElementById('inquiry')?.scrollIntoView({ behavior: 'smooth' });
             };
             modal.classList.remove('hidden');
             requestAnimationFrame(() => modal.querySelector('.modal-shell').classList.add('modal-visible'));
@@ -1261,10 +1825,28 @@
             const modal = document.getElementById('detailModal');
             modal.querySelector('.modal-shell').classList.remove('modal-visible');
             setTimeout(() => {
-                document.getElementById('modalMediaBox').innerHTML = '';
+                document.getElementById('modalMediaBox').querySelectorAll('img, video').forEach(media => media.remove());
+                modalImages = [];
+                currentModalImageIndex = 0;
                 modal.classList.add('hidden');
             }, 300);
         }
+
+        document.getElementById('modalPrevBtn').addEventListener('click', event => {
+            event.stopPropagation();
+            changeModalImage(-1);
+        });
+        document.getElementById('modalNextBtn').addEventListener('click', event => {
+            event.stopPropagation();
+            changeModalImage(1);
+        });
+        document.getElementById('modalMediaBox').addEventListener('touchstart', event => {
+            modalTouchStartX = event.changedTouches[0].screenX;
+        }, { passive: true });
+        document.getElementById('modalMediaBox').addEventListener('touchend', event => {
+            const distance = event.changedTouches[0].screenX - modalTouchStartX;
+            if (Math.abs(distance) > 45) changeModalImage(distance > 0 ? -1 : 1);
+        }, { passive: true });
 
         document.getElementById('detailModal').addEventListener('click', (event) => {
             if (event.target.id === 'detailModal') closeDetailModal();
@@ -1281,6 +1863,12 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(form);
+            if (inquiryItems.length) {
+                const selectedSummary = inquiryItems.map(item =>
+                    `${item.title} (${item.colors || 'Colour not specified'}, ${item.availability || 'Please confirm'})`
+                ).join(', ');
+                formData.set('note', `${formData.get('note') || ''}\nSelected products: ${selectedSummary}`.trim());
+            }
             try {
                 const response = await fetch('/api/inquiry', {
                     method: 'POST',
@@ -1290,6 +1878,7 @@
                     msg.classList.remove('hidden');
                     msg.innerHTML = `Thank you! Your inquiry has been submitted. Our team will contact you shortly.`;
                     form.reset();
+                    clearInquiryItems();
                 }
             } catch (err) {
                 alert("Submission failed. Please connect directly via WhatsApp.");
@@ -1297,19 +1886,26 @@
         });
 
         // Direct WhatsApp Message Composer
-        function sendDirectWhatsApp() {
-            const name = document.getElementById('custName').value || "Customer";
-            const branch = document.getElementById('custBranch').value;
-            const service = document.getElementById('custService').value;
-            const date = document.getElementById('custDate').value || "Not decided";
-            const note = document.getElementById('custNote').value;
-
-            const text = `*Shivbhavani Safa Paghdi Inquiry*%0A` +
-                `• Branch: ${encodeURIComponent(branch)}%0A` +
+        function buildWhatsAppMessage(items) {
+            const name = document.getElementById('custName')?.value || "Customer";
+            const branch = document.getElementById('custBranch')?.value || "Not selected";
+            const date = document.getElementById('custDate')?.value || "Not decided";
+            const note = document.getElementById('custNote')?.value || "None";
+            const products = items.map(item =>
+                `• ${item.title} | ${item.category} | ${item.colors || 'Colour not specified'} | ${item.availability || 'Please confirm'}${item.priceLabel || item.price_label ? ` | ${item.priceLabel || item.price_label}` : ''}`
+            ).join('\n');
+            return `*Shivbhavani Safa Paghdi Inquiry*%0A` +
                 `• Customer: ${encodeURIComponent(name)}%0A` +
-                `• Service / Product: ${encodeURIComponent(service)}%0A` +
+                `• Branch: ${encodeURIComponent(branch)}%0A` +
                 `• Event Date: ${encodeURIComponent(date)}%0A` +
-                `• Notes: ${encodeURIComponent(note || 'None')}`;
+                `• Selected Items:%0A${encodeURIComponent(products)}%0A` +
+                `• Notes: ${encodeURIComponent(note)}`;
+        }
+
+        function sendDirectWhatsApp() {
+            const service = document.getElementById('custService').value;
+            const fallback = [{ title: service, category: 'General inquiry', colors: 'Not specified', availability: 'Please confirm', url: '' }];
+            const text = buildWhatsAppMessage(inquiryItems.length ? inquiryItems : fallback);
 
             window.open(`https://wa.me/${BUSINESS_PHONE}?text=${text}`, '_blank');
         }
@@ -1326,6 +1922,51 @@
                 if (typeof AOS !== 'undefined') AOS.refresh();
             }, 1900);
         });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reelVideos = document.querySelectorAll('video');
+            if ('IntersectionObserver' in window && reelVideos.length > 0) {
+                const videoObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const vid = entry.target;
+                        if (!entry.isIntersecting || entry.intersectionRatio < 0.35) {
+                            if (!vid.paused) {
+                                vid.pause();
+                            }
+                        }
+                    });
+                }, { threshold: [0, 0.35, 0.7] });
+
+                reelVideos.forEach(vid => {
+                    videoObserver.observe(vid);
+                    vid.addEventListener('play', () => {
+                        reelVideos.forEach(other => {
+                            if (other !== vid && !other.paused) other.pause();
+                        });
+                    });
+                });
+            }
+        });
+    </script>
+
+    <script>
+        function slideGallery(btn, dir) {
+            const slider = btn.closest('.product-slider');
+            if (!slider) return;
+            const track = slider.querySelector('.slider-track');
+            const slides = track ? track.querySelectorAll('.slider-img') : [];
+            if (!track || slides.length === 0) return;
+
+            let index = parseInt(slider.dataset.index || '0');
+            index = (index + dir + slides.length) % slides.length;
+            slider.dataset.index = index;
+            track.style.transform = 'translateX(-' + (index * 100) + '%)';
+
+            const dots = slider.querySelectorAll('.slider-dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        }
     </script>
 </body>
 

@@ -9,15 +9,108 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 
-<body class="bg-stone-100 text-stone-800 font-sans min-h-screen">
+<body class="admin-shell bg-stone-100 text-stone-800 font-sans min-h-screen">
+    <style>
+        .admin-shell {
+            background: radial-gradient(circle at 8% 0%, rgba(197, 160, 89, .16), transparent 28%), #f5f1eb;
+        }
+        .admin-card {
+            border-color: rgba(197, 160, 89, .28);
+            box-shadow: 0 14px 35px rgba(84, 18, 30, .06);
+        }
+        .admin-card h3 {
+            letter-spacing: .015em;
+        }
+        .admin-input {
+            border-color: #e7ded2;
+            background: #fffdfa;
+        }
+        .admin-input:focus {
+            border-color: #c5a059;
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, .16);
+            outline: none;
+        }
+        .admin-section-title {
+            letter-spacing: .02em;
+        }
+        .catalog-thumb-strip {
+            display: flex;
+            gap: .35rem;
+            max-width: 180px;
+            overflow-x: auto;
+            padding-top: .4rem;
+            scrollbar-width: thin;
+        }
+        .catalog-thumb-strip img {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            object-fit: cover;
+            border-radius: .55rem;
+            border: 1px solid rgba(197, 160, 89, .55);
+        }
+        .upload-preview {
+            display: none;
+            gap: .5rem;
+            overflow-x: auto;
+            padding: .35rem 0;
+            scrollbar-width: thin;
+        }
+        .upload-preview.has-images { display: flex; }
+        .upload-preview img {
+            width: 72px;
+            height: 72px;
+            flex: 0 0 72px;
+            object-fit: cover;
+            border-radius: .75rem;
+            border: 1px solid rgba(197, 160, 89, .55);
+        }
+        @media (max-width: 640px) {
+            .admin-header {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: .75rem;
+                padding: .9rem 1rem;
+            }
+            .admin-header > div:first-child {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .admin-header h1 {
+                font-size: 1rem;
+            }
+            .admin-header .admin-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            .admin-dashboard {
+                padding: 1rem .75rem 2rem;
+                gap: 1rem;
+            }
+            .admin-card {
+                padding: 1rem;
+                min-width: 0;
+            }
+            .admin-card .grid-cols-2 {
+                grid-template-columns: minmax(0, 1fr);
+            }
+            .admin-table {
+                min-width: 640px;
+            }
+            .admin-login {
+                margin: 2rem .75rem 0;
+                padding: 1.25rem;
+            }
+        }
+    </style>
 
     <!-- Admin Header -->
-    <header class="bg-stone-900 text-white py-4 px-6 flex justify-between items-center shadow">
+    <header class="admin-header bg-stone-900 text-white py-4 px-6 flex justify-between items-center shadow">
         <div class="flex items-center gap-3">
             <h1 class="font-bold text-lg text-amber-400">Shivbhavani Admin Portal</h1>
             <span class="text-xs bg-stone-800 text-stone-400 px-2.5 py-1 rounded">Developer: Hit Savani</span>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="admin-actions flex items-center gap-2">
             <a href="/" class="text-xs bg-stone-800 hover:bg-stone-700 text-stone-200 px-3 py-1.5 rounded transition">
                 <i class="fas fa-eye mr-1"></i> View Live Website
             </a>
@@ -34,7 +127,7 @@
 
     {% if not is_authenticated %}
     <!-- Admin Login -->
-    <div class="max-w-md mx-auto mt-20 p-8 bg-white rounded-2xl shadow-sm border">
+    <div class="admin-login max-w-md mx-auto mt-20 p-8 bg-white rounded-2xl shadow-sm border">
         <div class="text-center mb-6">
             <i class="fas fa-lock text-4xl text-amber-500 mb-2"></i>
             <h2 class="text-xl font-bold">Admin Login</h2>
@@ -59,11 +152,62 @@
 
     {% else %}
     <!-- Admin Management Dashboard -->
-    <div class="max-w-6xl mx-auto py-8 px-4 grid lg:grid-cols-3 gap-8">
+    <div class="admin-dashboard max-w-6xl mx-auto py-8 px-4 grid lg:grid-cols-3 gap-8">
 
         <!-- Left: Upload New Media -->
-        <div class="space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+        <div class="space-y-6 flex flex-col lg:contents">
+            <div class="admin-card order-2 lg:order-2 lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-file-circle-plus text-amber-600"></i> Add New Order
+                </h3>
+                <form action="/api/admin/orders/create" method="POST" class="space-y-3">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input name="customer_name" required placeholder="Customer name" class="admin-input w-full border rounded-lg p-2 text-xs">
+                        <input name="phone" required placeholder="Phone number" class="admin-input w-full border rounded-lg p-2 text-xs">
+                    </div>
+                    <input name="branch" value="Bhavnagar (Main Branch)" placeholder="Branch" class="admin-input w-full border rounded-lg p-2 text-xs">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" name="event_date" class="admin-input w-full border rounded-lg p-2 text-xs">
+                        <select name="event_type" class="admin-input w-full border rounded-lg p-2 text-xs">
+                            {% for type in ['Wedding', 'Engagement', 'Reception', 'Groom Entry', 'Family Function', 'Other'] %}
+                            <option>{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" name="pickup_date" class="admin-input w-full border rounded-lg p-2 text-xs">
+                        <input type="date" name="return_date" class="admin-input w-full border rounded-lg p-2 text-xs">
+                    </div>
+                    <div id="orderProducts" class="space-y-2">
+                        <div class="order-product-row grid grid-cols-[1fr_58px_78px] gap-1">
+                            <select name="product_name" class="admin-input border rounded-lg p-2 text-xs">
+                                <option value="">Select product</option>
+                                {% for item in items %}<option value="{{ item.title }}">{{ item.title }}</option>{% endfor %}
+                            </select>
+                            <input type="number" name="quantity" min="1" value="1" class="admin-input border rounded-lg p-2 text-xs" title="Quantity">
+                            <input type="number" name="item_price" min="0" step="0.01" placeholder="Price" class="admin-input border rounded-lg p-2 text-xs">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addOrderProductRow()" class="text-[11px] font-bold text-amber-700">+ Add another product</button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" name="total_amount" min="0" step="0.01" placeholder="Total amount" class="admin-input border rounded-lg p-2 text-xs">
+                        <input type="number" name="advance_paid" min="0" step="0.01" placeholder="Advance paid" class="admin-input border rounded-lg p-2 text-xs">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" name="deposit_amount" min="0" step="0.01" placeholder="Security deposit" class="admin-input border rounded-lg p-2 text-xs">
+                        <select name="payment_status" class="admin-input border rounded-lg p-2 text-xs">
+                            <option>Unpaid</option><option>Partial</option><option>Paid</option><option>Refund pending</option><option>Refunded</option>
+                        </select>
+                    </div>
+                    <select name="payment_method" class="admin-input w-full border rounded-lg p-2 text-xs">
+                        <option>Cash</option><option>UPI</option><option>Bank transfer</option><option>Card</option><option>Other</option>
+                    </select>
+                    <textarea name="notes" rows="2" placeholder="Private admin notes" class="admin-input w-full border rounded-lg p-2 text-xs"></textarea>
+                    <button class="w-full bg-velvetWine hover:bg-softWine text-white font-bold py-2.5 rounded-lg text-xs transition shadow">Create Order</button>
+                </form>
+            </div>
+
+            <div class="admin-card order-1 lg:order-1 lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border">
                 <h3 class="font-bold text-base text-stone-900 mb-4 pb-2 border-b flex items-center gap-2">
                     <i class="fas fa-cloud-arrow-up text-amber-600"></i> Add New Media
                 </h3>
@@ -72,20 +216,20 @@
                     <div>
                         <label class="block text-xs font-semibold mb-1">Title *</label>
                         <input type="text" name="title" required placeholder="e.g. Royal Maroon Velvet Jodhpuri"
-                            class="w-full border rounded-lg p-2 text-xs outline-none">
+                            class="admin-input w-full border rounded-lg p-2 text-xs">
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-xs font-semibold mb-1">Type *</label>
-                            <select name="media_type" class="w-full border rounded-lg p-2 text-xs outline-none">
+                            <select name="media_type" class="admin-input w-full border rounded-lg p-2 text-xs">
                                 <option value="video">Video Reel</option>
                                 <option value="image">Photo</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold mb-1">Category *</label>
-                            <select name="category" class="w-full border rounded-lg p-2 text-xs outline-none">
+                            <select name="category" class="admin-input w-full border rounded-lg p-2 text-xs">
                                 <option value="Safa & Paghdi">Safa & Paghdi</option>
                                 <option value="Jodhpuri">Jodhpuri</option>
                                 <option value="Achkan">Achkan</option>
@@ -99,14 +243,33 @@
                     <div>
                         <label class="block text-xs font-semibold mb-1">Badge</label>
                         <input type="text" name="badge" placeholder="e.g. Signature, Royal Look" value="Royal Look"
-                            class="w-full border rounded-lg p-2 text-xs outline-none">
+                            class="admin-input w-full border rounded-lg p-2 text-xs">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold mb-1">Description</label>
                         <textarea name="description" rows="2" placeholder="Short product description"
-                            class="w-full border rounded-lg p-2 text-xs outline-none"></textarea>
+                            class="admin-input w-full border rounded-lg p-2 text-xs"></textarea>
                     </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Matching colours</label>
+                            <input name="colors" placeholder="ivory, maroon, emerald"
+                                class="admin-input w-full border rounded-lg p-2 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Availability</label>
+                            <select name="availability" class="admin-input w-full border rounded-lg p-2 text-xs">
+                                <option>Available</option>
+                                <option>By appointment</option>
+                                <option>Cleaning</option>
+                                <option>Reserved</option>
+                            </select>
+                        </div>
+                    </div>
+                    <input name="price_label" placeholder="Optional: Rent from ₹___ / Buy available"
+                        class="admin-input w-full border rounded-lg p-2 text-xs">
 
                     <label class="flex items-center gap-2 text-xs font-semibold">
                         <input type="checkbox" name="featured" value="true" class="accent-amber-600">
@@ -114,9 +277,18 @@
                     </label>
 
                     <div>
-                        <label class="block text-xs font-semibold mb-1">Select File (MP4 / JPG / PNG) *</label>
-                        <input type="file" name="file" required accept="video/*,image/*"
-                            class="w-full border rounded-lg p-1.5 text-xs bg-stone-50">
+                        <label class="block text-xs font-semibold mb-1">Video or Single Media File</label>
+                        <input type="file" name="files" accept="video/*,image/*"
+                            class="admin-input w-full border rounded-lg p-1.5 text-xs">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Gallery Photos (multiple)</label>
+                        <input type="file" name="item_images" multiple accept="image/*"
+                            id="itemImagesInput" class="admin-input admin-file-input w-full border rounded-lg p-1.5 text-xs">
+                        <p class="text-[10px] text-stone-500 mt-1">Select multiple photos to create one swipeable
+                            gallery item.</p>
+                        <div id="uploadPreview" class="upload-preview" aria-label="Selected gallery photo preview"></div>
                     </div>
 
                     <button type="submit"
@@ -127,7 +299,7 @@
             </div>
 
             <!-- Live Design Controls -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <div class="admin-card order-6 lg:order-6 lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border">
                 <h3 class="font-bold text-base text-stone-900 mb-4 pb-2 border-b flex items-center gap-2">
                     <i class="fas fa-palette text-amber-600"></i> Live Website Design
                 </h3>
@@ -156,13 +328,36 @@
             </div>
 
             <!-- Site Logo -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <div class="admin-card order-4 lg:order-4 lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border">
                 <h3 class="font-bold text-base text-stone-900 mb-4 pb-2 border-b flex items-center gap-2">
                     <i class="fas fa-image text-amber-600"></i> Site Logo
                 </h3>
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-16 h-16 rounded-full border bg-stone-50 flex items-center justify-center p-2">
                         <img src="{{ logo_url }}" alt="Current site logo" class="max-w-full max-h-full object-contain">
+                    </div>
+
+                    <!-- Business Settings -->
+                    <div class="admin-card bg-white p-6 rounded-2xl shadow-sm border">
+                        <h3 class="font-bold text-base text-stone-900 mb-2 pb-2 border-b flex items-center gap-2">
+                            <i class="fas fa-store text-amber-600"></i> Business Settings
+                        </h3>
+                        <p class="text-xs text-stone-500 mb-4">Update the public contact and homepage content without editing code.</p>
+                        <form action="/api/admin/business" method="POST" class="space-y-3">
+                            <input name="phone" value="{{ business.phone }}" required placeholder="919925245246"
+                                class="admin-input w-full border rounded-lg p-2 text-xs">
+                            <input name="instagram" value="{{ business.instagram }}" required placeholder="Instagram handle"
+                                class="admin-input w-full border rounded-lg p-2 text-xs">
+                            <input name="headline" value="{{ business.headline }}" required placeholder="Homepage headline"
+                                class="admin-input w-full border rounded-lg p-2 text-xs">
+                            <textarea name="announcement" rows="2" required placeholder="Short business message"
+                                class="admin-input w-full border rounded-lg p-2 text-xs">{{ business.announcement }}</textarea>
+                            <input name="timings" value="{{ business.timings }}" required placeholder="Business timings"
+                                class="admin-input w-full border rounded-lg p-2 text-xs">
+                            <button type="submit" class="w-full bg-stone-900 hover:bg-black text-amber-400 font-bold py-2.5 rounded-lg text-xs transition shadow">
+                                Save Business Settings
+                            </button>
+                        </form>
                     </div>
                     <p class="text-xs text-stone-500">This logo appears in the website header, footer, and browser tab.
                     </p>
@@ -179,14 +374,59 @@
         </div>
 
         <!-- Right: Leads and Active Media -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="order-3 lg:order-3 lg:col-span-3 space-y-6">
+            <div class="admin-card bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-3 pb-2 border-b flex justify-between items-center">
+                    <span><i class="fas fa-clipboard-list text-amber-600 mr-1"></i> Orders ({{ orders|length }})</span>
+                </h3>
+                {% if orders %}
+                <div class="overflow-x-auto max-h-80 overflow-y-auto">
+                    <table class="admin-table w-full text-left text-xs">
+                        <thead class="bg-stone-50 text-stone-500">
+                            <tr><th class="p-2">Order</th><th class="p-2">Customer</th><th class="p-2">Event</th><th class="p-2">Amount</th><th class="p-2">Status</th></tr>
+                        </thead>
+                        <tbody class="divide-y">
+                        {% for order in orders %}
+                            <tr>
+                                <td class="p-2 font-bold text-velvetWine">{{ order.id }}</td>
+                                <td class="p-2"><div class="font-semibold">{{ order.customer_name }}</div><a class="text-green-700" href="https://wa.me/{{ order.phone }}" target="_blank">{{ order.phone }}</a></td>
+                                <td class="p-2">{{ order.event_date or 'Not set' }}<br><span class="text-stone-400">{{ order.event_type }}</span></td>
+                                <td class="p-2">₹{{ '%.2f'|format(order.total_amount|float) }}<br><span class="text-stone-400">Bal: ₹{{ '%.2f'|format(order.balance_amount|float) }}</span></td>
+                                <td class="p-2">
+                                    <form method="post" action="/api/admin/orders/{{ order.id }}/status">
+                                        <select name="order_status" onchange="this.form.submit()" class="border rounded px-1 py-1 text-[10px] bg-white">
+                                            {% for order_status in ['New', 'Contacted', 'Quotation Sent', 'Advance Pending', 'Confirmed', 'Preparing', 'Ready for Pickup', 'Out for Delivery', 'Delivered', 'Returned', 'Completed', 'Cancelled'] %}
+                                            <option value="{{ order_status }}" {% if order.status|default('New') == order_status %}selected{% endif %}>{{ order_status }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}<p class="text-xs text-stone-400 py-4 text-center">No orders created yet.</p>{% endif %}
+            </div>
 
             <!-- Inquiries Table -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <div class="admin-card bg-white p-6 rounded-2xl shadow-sm border">
                 <h3 class="font-bold text-base text-stone-900 mb-3 pb-2 border-b flex justify-between items-center">
                     <span><i class="fas fa-inbox text-amber-600 mr-1"></i> Received Inquiries ({{ inquiries|length
                         }})</span>
                 </h3>
+                {% if inquiries %}
+                <div class="flex flex-col sm:flex-row gap-2 mb-3">
+                    <input id="inquirySearch" type="search" placeholder="Search name, phone, branch or service..."
+                        class="flex-1 border rounded-lg px-3 py-2 text-xs">
+                    <select id="inquiryStatusFilter" class="border rounded-lg px-3 py-2 text-xs bg-white">
+                        <option value="">All statuses</option>
+                        {% for status in ['New', 'Contacted', 'Confirmed', 'Completed', 'Cancelled'] %}
+                        <option value="{{ status }}">{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
 
                 {% if inquiries %}
                 <div class="overflow-x-auto max-h-64 overflow-y-auto">
@@ -198,11 +438,14 @@
                                 <th class="p-2">Phone</th>
                                 <th class="p-2">Branch</th>
                                 <th class="p-2">Service</th>
+                                <th class="p-2">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
                             {% for inq in inquiries %}
-                            <tr class="hover:bg-amber-50/50">
+                            <tr class="inquiry-row hover:bg-amber-50/50"
+                                data-search="{{ (inq.name ~ ' ' ~ inq.phone ~ ' ' ~ inq.branch ~ ' ' ~ inq.service_type)|lower }}"
+                                data-inquiry-status="{{ inq.status|default('New') }}">
                                 <td class="p-2 text-stone-400">{{ inq.submitted_at }}</td>
                                 <td class="p-2 font-semibold">{{ inq.name }}</td>
                                 <td class="p-2">
@@ -213,6 +456,16 @@
                                 </td>
                                 <td class="p-2">{{ inq.branch }}</td>
                                 <td class="p-2">{{ inq.service_type }}</td>
+                                <td class="p-2">
+                                    <form method="post" action="/api/admin/inquiries/{{ inq.id }}/status" class="flex items-center gap-1">
+                                        <select name="inquiry_status" onchange="this.form.submit()"
+                                            class="border rounded px-1 py-1 text-[10px] bg-white">
+                                            {% for status in ['New', 'Contacted', 'Confirmed', 'Completed', 'Cancelled'] %}
+                                            <option value="{{ status }}" {% if inq.status|default('New') == status %}selected{% endif %}>{{ status }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </form>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -224,7 +477,7 @@
             </div>
 
             <!-- Admin Activity History -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <div class="admin-card bg-white p-6 rounded-2xl shadow-sm border">
                 <h3 class="font-bold text-base text-stone-900 mb-3 pb-2 border-b flex justify-between items-center">
                     <span><i class="fas fa-clock-rotate-left text-amber-600 mr-1"></i> Admin Activity History ({{
                         history|length }})</span>
@@ -261,7 +514,7 @@
             </div>
 
             <!-- Active Media Items -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <div class="admin-card bg-white p-6 rounded-2xl shadow-sm border">
                 <h3 class="font-bold text-base text-stone-900 mb-3 pb-2 border-b">
                     Active Catalog Items ({{ items|length }})
                 </h3>
@@ -275,6 +528,14 @@
                                 item.type }}</span>
                             <h5 class="font-bold text-stone-800 mt-1">{{ item.title }}</h5>
                             <span class="text-[11px] text-stone-500">{{ item.category }}</span>
+                            {% if item.images and item.images|length > 0 %}
+                            <div class="catalog-thumb-strip" aria-label="Gallery photos">
+                                {% for image in item.images %}
+                                <img src="{{ image.url if image is mapping else image }}"
+                                    alt="{{ item.title }} photo {{ loop.index }}">
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="flex items-center gap-1">
                             <button type="button" onclick="toggleEdit('{{ item.id }}')"
@@ -303,6 +564,17 @@
                         </div>
                         <textarea name="description" rows="2"
                             class="w-full border rounded-lg p-2 text-xs">{{ item.description|default('') }}</textarea>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input name="colors" value="{{ item.colors|default('') }}" placeholder="Colours"
+                                class="border rounded-lg p-2 text-xs">
+                            <select name="availability" class="border rounded-lg p-2 text-xs">
+                                {% for status in ['Available', 'By appointment', 'Cleaning', 'Reserved'] %}
+                                <option {% if item.availability|default('Available') == status %}selected{% endif %}>{{ status }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input name="price_label" value="{{ item.price_label|default('') }}" placeholder="Rent / sale label"
+                            class="w-full border rounded-lg p-2 text-xs">
                         <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="featured"
                                 value="true" {% if item.featured %}checked{% endif %} class="accent-amber-600"> Featured
                             item</label>
@@ -320,9 +592,56 @@
 </body>
 
 <script>
+    function addOrderProductRow() {
+        const container = document.getElementById('orderProducts');
+        const first = container.querySelector('.order-product-row');
+        const row = first.cloneNode(true);
+        row.querySelectorAll('input').forEach(input => {
+            input.value = input.name === 'quantity' ? '1' : '';
+        });
+        row.querySelector('select').selectedIndex = 0;
+        container.appendChild(row);
+    }
+
     function toggleEdit(itemId) {
         document.getElementById(`edit-${itemId}`).classList.toggle('hidden');
     }
+
+    const itemImagesInput = document.getElementById('itemImagesInput');
+    const uploadPreview = document.getElementById('uploadPreview');
+    if (itemImagesInput && uploadPreview) {
+        itemImagesInput.addEventListener('change', () => {
+            uploadPreview.replaceChildren();
+            const files = Array.from(itemImagesInput.files || []).filter(file => file.type.startsWith('image/'));
+            files.forEach(file => {
+                const image = document.createElement('img');
+                image.alt = file.name;
+                image.src = URL.createObjectURL(file);
+                uploadPreview.appendChild(image);
+            });
+            uploadPreview.classList.toggle('has-images', files.length > 0);
+        });
+    }
 </script>
+{% if is_authenticated %}
+<script>
+    (() => {
+        const search = document.getElementById('inquirySearch');
+        const status = document.getElementById('inquiryStatusFilter');
+        const rows = () => document.querySelectorAll('.inquiry-row');
+        function filterInquiries() {
+            const query = (search?.value || '').toLowerCase().trim();
+            const selected = status?.value || '';
+            rows().forEach(row => {
+                const matchesText = !query || row.dataset.search.includes(query);
+                const matchesStatus = !selected || row.dataset.inquiryStatus === selected;
+                row.style.display = matchesText && matchesStatus ? '' : 'none';
+            });
+        }
+        search?.addEventListener('input', filterInquiries);
+        status?.addEventListener('change', filterInquiries);
+    })();
+</script>
+{% endif %}
 
 </html>

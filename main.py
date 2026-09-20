@@ -884,12 +884,35 @@ async def admin_delete_media(request: Request, item_id: str = Form(...)):
     item_to_remove = next((item for item in items if item["id"] == item_id), None)
     remaining_items = [item for item in items if item["id"] != item_id]
     if item_to_remove:
-        file_url = item_to_remove.get("url", "")
-        if file_url.startswith("/static/"):
-            file_path = os.path.join("static", file_url.split("/static/", 1)[1])
+        file_urls = [item_to_remove.get("url", "")]
+        file_urls.extend(
+            image.get("url", "") for image in item_to_remove.get("images", [])
+            if isinstance(image, dict)
+        )
+        locked_files = []
+        for file_url in file_urls:
+            if file_url.startswith("/static/"):
+                file_path = os.path.join("static", file_url.split("/static/", 1)[1])
+            elif file_url.startswith(f"{MEDIA_URL_PREFIX}/"):
+                file_path = os.path.join(UPLOAD_DIR, file_url.split(f"{MEDIA_URL_PREFIX}/", 1)[1])
+            else:
+                continue
             if os.path.exists(file_path):
-                os.remove(file_path)
-        append_history("delete", item_to_remove.get("title", "Unknown item"), item_to_remove.get("type", "unknown"), "admin", f"Removed item from {item_to_remove.get('category', 'catalog')}")
+                try:
+                    os.remove(file_path)
+                except PermissionError:
+                    locked_files.append(os.path.basename(file_path))
+                except OSError as error:
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Could not delete media file: {error}"
+                    ) from error
+        cleanup_note = (
+            f"Removed item from {item_to_remove.get('category', 'catalog')}"
+            if not locked_files else
+            f"Removed from catalogue; file still open and could not be deleted: {', '.join(locked_files)}"
+        )
+        append_history("delete", item_to_remove.get("title", "Unknown item"), item_to_remove.get("type", "unknown"), "admin", cleanup_note)
 
     with open(COLLECTION_FILE, "w", encoding="utf-8") as f:
         json.dump(remaining_items, f, indent=4, ensure_ascii=False)

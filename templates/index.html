@@ -1084,6 +1084,7 @@
                         {% if item.type == 'video' %}
                         <div class="reel-frame w-full overflow-hidden bg-black">
                             <video src="{{ item.url }}" controls playsinline preload="metadata"
+                                onclick="event.stopPropagation()"
                                 class="w-full h-full object-cover bg-black"></video>
                         </div>
                         <span
@@ -1155,7 +1156,7 @@
                                 Now &rarr;</a>
                         </div>
                         <button type="button"
-                            data-cart-item="{{ {'title': item.title, 'category': item.category, 'colors': item.colors|default(''), 'availability': item.availability|default('Available'), 'price_label': item.price_label|default(''), 'url': item.url}|tojson|e }}"
+                            data-cart-item='{{ {'title': item.title, 'category': item.category, 'colors': item.colors|default(''), 'availability': item.availability|default('Available'), 'price_label': item.price_label|default(''), 'url': item.url}|tojson }}'
                             onclick="event.stopPropagation(); toggleInquiryItem(this)"
                             class="mt-2 w-full rounded-lg border border-champagneGold/60 text-velvetWine py-2 px-2 text-[10px] font-bold transition hover:bg-softGold/30">
                             <i class="fas fa-plus mr-1"></i> Add to Inquiry
@@ -1689,30 +1690,56 @@
             ).join('');
         }
 
-        function toggleInquiryItem(button) {
-            const item = JSON.parse(button.dataset.cartItem);
+        function syncInquiryButton(button, selected) {
+            if (!button) return;
+            button.classList.toggle('bg-softGold', selected);
+            button.innerHTML = selected
+                ? '<i class="fas fa-check mr-1"></i> Added to Inquiry'
+                : '<i class="fas fa-plus mr-1"></i> Add to Inquiry';
+        }
+
+        function toggleInquiryItem(button, selectedItem = null) {
+            let item = selectedItem;
+            if (!item && button?.dataset?.cartItem) {
+                try {
+                    item = JSON.parse(button.dataset.cartItem);
+                } catch (error) {
+                    console.error('Unable to read inquiry item data.', error);
+                    return;
+                }
+            }
+            if (!item) return;
             const existing = inquiryItems.findIndex(selected => selected.title === item.title && selected.url === item.url);
             if (existing >= 0) {
                 inquiryItems.splice(existing, 1);
-                button.classList.remove('bg-softGold');
-                button.innerHTML = '<i class="fas fa-plus mr-1"></i> Add to Inquiry';
+                syncInquiryButton(button, false);
             } else {
                 inquiryItems.push(item);
-                button.classList.add('bg-softGold');
-                button.innerHTML = '<i class="fas fa-check mr-1"></i> Added to Inquiry';
+                syncInquiryButton(button, true);
             }
+            document.querySelectorAll('[data-cart-item]').forEach(candidate => {
+                try {
+                    const candidateItem = JSON.parse(candidate.dataset.cartItem);
+                    if (candidateItem.title === item.title && candidateItem.url === item.url) {
+                        syncInquiryButton(candidate, existing < 0);
+                    }
+                } catch (error) {
+                    console.error('Unable to sync inquiry item data.', error);
+                }
+            });
             renderInquiryItems();
         }
 
         function removeInquiryItem(index) {
             inquiryItems.splice(index, 1);
             document.querySelectorAll('[data-cart-item]').forEach(button => {
-                const item = JSON.parse(button.dataset.cartItem);
-                const selected = inquiryItems.some(entry => entry.title === item.title && entry.url === item.url);
-                button.classList.toggle('bg-softGold', selected);
-                button.innerHTML = selected
-                    ? '<i class="fas fa-check mr-1"></i> Added to Inquiry'
-                    : '<i class="fas fa-plus mr-1"></i> Add to Inquiry';
+                try {
+                    const item = JSON.parse(button.dataset.cartItem);
+                    const selected = inquiryItems.some(entry => entry.title === item.title && entry.url === item.url);
+                    syncInquiryButton(button, selected);
+                } catch (error) {
+                    console.error('Unable to sync inquiry item data.', error);
+                }
             });
             renderInquiryItems();
         }
@@ -1720,8 +1747,7 @@
         function clearInquiryItems() {
             inquiryItems.splice(0, inquiryItems.length);
             document.querySelectorAll('[data-cart-item]').forEach(button => {
-                button.classList.remove('bg-softGold');
-                button.innerHTML = '<i class="fas fa-plus mr-1"></i> Add to Inquiry';
+                syncInquiryButton(button, false);
             });
             renderInquiryItems();
         }
@@ -1792,9 +1818,26 @@
             const mediaUrl = typeof image === 'string' ? image : image.url;
             const mediaAlt = typeof image === 'string' ? 'Product image' : (image.alt || 'Product image');
             const media = modalImages.length === 1 && mediaUrl.match(/\.(mp4|webm|mov)(\?|$)/i)
-                ? Object.assign(document.createElement('video'), { src: mediaUrl, controls: true, autoplay: true, playsInline: true })
+                ? Object.assign(document.createElement('video'), {
+                    src: mediaUrl,
+                    controls: true,
+                    autoplay: true,
+                    muted: false,
+                    volume: 1,
+                    playsInline: true
+                })
                 : Object.assign(document.createElement('img'), { src: mediaUrl, alt: mediaAlt });
             media.className = 'w-full max-h-[55vh] object-contain bg-black';
+            if (media.tagName === 'VIDEO') {
+                media.addEventListener('click', event => event.stopPropagation());
+                media.addEventListener('loadedmetadata', () => {
+                    media.muted = false;
+                    media.volume = 1;
+                }, { once: true });
+                media.play().catch(() => {
+                    // Browsers can block autoplay with sound; native controls remain available.
+                });
+            }
             mediaBox.appendChild(media);
             const multiple = modalImages.length > 1;
             document.getElementById('modalPrevBtn').classList.toggle('hidden', !multiple);
@@ -1836,9 +1879,7 @@
                 window.open(`https://wa.me/${BUSINESS_PHONE}?text=${text}`, '_blank');
             };
             document.getElementById('modalAddInquiryBtn').onclick = () => {
-                toggleInquiryItem({ dataset: { cartItem: JSON.stringify({ title, category, colors, availability, price_label: priceLabel, url }) },
-                    classList: { add() {}, remove() {} },
-                    innerHTML: '' });
+                toggleInquiryItem(null, { title, category, colors, availability, price_label: priceLabel, url });
                 closeDetailModal();
                 document.getElementById('inquiry')?.scrollIntoView({ behavior: 'smooth' });
             };

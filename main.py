@@ -173,6 +173,27 @@ def get_collection():
     try:
         with open(COLLECTION_FILE, "r", encoding="utf-8") as f:
             collection = json.load(f)
+            if not isinstance(collection, list):
+                return []
+            normalized = []
+            for item in collection:
+                if not isinstance(item, dict):
+                    continue
+                item.setdefault("id", f"item_{uuid.uuid4().hex}")
+                item.setdefault("title", "Untitled item")
+                item.setdefault("category", "Wedding Accessories")
+                item.setdefault("type", "image")
+                item.setdefault("url", "")
+                item.setdefault("badge", "Royal Look")
+                item.setdefault("description", "")
+                item.setdefault("colors", "")
+                item.setdefault("availability", "Available")
+                item.setdefault("price_label", "")
+                item.setdefault("featured", False)
+                if not isinstance(item.get("images"), list):
+                    item["images"] = []
+                normalized.append(item)
+            collection = normalized
             for item in collection:
                 if item.get("url", "").startswith("/static/uploads/") and PERSISTENT_DATA_DIR != ".":
                     item["url"] = item["url"].replace("/static/uploads/", f"{MEDIA_URL_PREFIX}/")
@@ -198,7 +219,8 @@ def get_inquiries():
     if os.path.exists(LEADS_FILE):
         try:
             with open(LEADS_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                records = json.load(f)
+                return [record for record in records if isinstance(record, dict)] if isinstance(records, list) else []
         except Exception:
             return []
     return []
@@ -208,7 +230,8 @@ def get_orders():
     if os.path.exists(ORDERS_FILE):
         try:
             with open(ORDERS_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                records = json.load(f)
+                return [record for record in records if isinstance(record, dict)] if isinstance(records, list) else []
         except Exception:
             return []
     return []
@@ -218,7 +241,8 @@ def get_history():
     if os.path.exists(HISTORY_FILE):
         try:
             with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                records = json.load(f)
+                return [record for record in records if isinstance(record, dict)] if isinstance(records, list) else []
         except Exception:
             return []
     return []

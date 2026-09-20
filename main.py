@@ -43,7 +43,8 @@ if PERSISTENT_DATA_DIR != ".":
                 shutil.copy2(source, target)
     for data_filename in (
         "collection.json", "business.json", "design.json",
-        "admin_history.json", "inquiries.json", "orders.json", "logo_config.json"
+        "admin_history.json", "inquiries.json", "orders.json", "logo_config.json",
+        "categories.json"
     ):
         source = data_filename
         target = os.path.join(PERSISTENT_DATA_DIR, data_filename)
@@ -91,6 +92,7 @@ HISTORY_FILE = persistent_file("admin_history.json")
 LOGO_CONFIG_FILE = persistent_file("logo_config.json")
 DESIGN_FILE = persistent_file("design.json")
 BUSINESS_FILE = persistent_file("business.json")
+CATEGORY_FILE = persistent_file("categories.json")
 DEFAULT_LOGO_URL = "/static/logo.svg"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "S@vani6055")
 ACTIVE_ADMIN_SESSIONS = set()
@@ -108,6 +110,12 @@ DEFAULT_BUSINESS = {
     "announcement": "Custom wedding turbans and royal groom accessories in Bhavnagar and Surat.",
     "timings": "Open daily by appointment"
 }
+
+DEFAULT_CATEGORIES = [
+    "Safa", "Paghdi", "Brooch", "Kalgi", "Achkan", "Indo-Western",
+    "Talwar", "Katar - Dhal", "Angarkha", "Jodhpuri", "Jewellery",
+    "Kamarbandh / Kamalbelt", "Koti", "Blazer", "Kurta", "Scarf"
+]
 
 # Pre-seeded collection using your showroom assets
 DEFAULT_COLLECTION = [
@@ -285,6 +293,34 @@ def get_business():
     return DEFAULT_BUSINESS.copy()
 
 
+def get_categories():
+    if os.path.exists(CATEGORY_FILE):
+        try:
+            with open(CATEGORY_FILE, "r", encoding="utf-8") as f:
+                categories = json.load(f)
+            if isinstance(categories, list):
+                clean = [str(category).strip() for category in categories if str(category).strip()]
+                return list(dict.fromkeys(clean))
+        except Exception:
+            pass
+    return DEFAULT_CATEGORIES.copy()
+
+
+def save_categories(categories):
+    clean = list(dict.fromkeys(
+        str(category).strip() for category in categories if str(category).strip()
+    ))
+    with open(CATEGORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(clean, f, indent=4, ensure_ascii=False)
+    return clean
+
+
+def remember_category(category):
+    category = category.strip()
+    if category and category.casefold() not in {item.casefold() for item in get_categories()}:
+        save_categories(get_categories() + [category])
+
+
 def append_history(action: str, item_title: str = "", item_type: str = "", admin: str = "admin", details: str = ""):
     history = get_history()
     entry = {
@@ -395,6 +431,7 @@ async def serve_admin(request: Request, error: str = ""):
     inquiries = get_inquiries() if is_authenticated else []
     orders = get_orders() if is_authenticated else []
     history = get_history() if is_authenticated else []
+    categories = get_categories() if is_authenticated else []
     logo_url = get_logo_url() if is_authenticated else DEFAULT_LOGO_URL
     design = get_design() if is_authenticated else DEFAULT_DESIGN.copy()
     business = get_business() if is_authenticated else DEFAULT_BUSINESS.copy()
@@ -408,6 +445,7 @@ async def serve_admin(request: Request, error: str = ""):
         "logo_url": logo_url,
         "design": design,
         "business": business,
+        "categories": categories,
         "error": error
     })
 
@@ -641,6 +679,10 @@ async def admin_upload_media(
     gallery_images = [upload for upload in (item_images or []) if upload.filename]
     if not uploaded_files and not gallery_images:
         raise HTTPException(status_code=400, detail="Select at least one media file")
+    category = category.strip()
+    if not category:
+        raise HTTPException(status_code=400, detail="Category is required")
+    remember_category(category)
 
     items = get_collection()
 
@@ -711,6 +753,35 @@ async def admin_upload_media(
     return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
 
 
+@app.post("/api/admin/categories/add")
+async def admin_add_category(request: Request, category: str = Form(...)):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    category = category.strip()
+    if not category or len(category) > 60:
+        raise HTTPException(status_code=400, detail="Enter a category between 1 and 60 characters")
+    if category.casefold() in {item.casefold() for item in get_categories()}:
+        raise HTTPException(status_code=400, detail="Category already exists")
+    save_categories(get_categories() + [category])
+    append_history("category added", category, "category", "admin", "Added from Admin category manager")
+    return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/api/admin/categories/delete")
+async def admin_delete_category(request: Request, category: str = Form(...)):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    category = category.strip()
+    categories = get_categories()
+    if category not in categories:
+        raise HTTPException(status_code=404, detail="Category not found")
+    if len(categories) <= 1:
+        raise HTTPException(status_code=400, detail="At least one category must remain")
+    save_categories([item for item in categories if item != category])
+    append_history("category deleted", category, "category", "admin", "Deleted from Admin category manager")
+    return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
+
+
 @app.post("/api/admin/update-item")
 async def admin_update_media(
     request: Request,
@@ -726,6 +797,10 @@ async def admin_update_media(
 ):
     if not is_admin_authenticated(request):
         raise HTTPException(status_code=403, detail="Unauthorized")
+    category = category.strip()
+    if not category:
+        raise HTTPException(status_code=400, detail="Category is required")
+    remember_category(category)
 
     items = get_collection()
     item = next((entry for entry in items if entry.get("id") == item_id), None)
@@ -734,7 +809,7 @@ async def admin_update_media(
 
     item.update({
         "title": title.strip(),
-        "category": category.strip(),
+        "category": category,
         "badge": badge.strip(),
         "description": description.strip(),
         "colors": colors.strip().lower(),
@@ -758,6 +833,10 @@ async def add_item(
 ):
     if not is_admin_authenticated(request):
         raise HTTPException(status_code=403, detail="Unauthorized")
+    category = category.strip()
+    if not category:
+        raise HTTPException(status_code=400, detail="Category is required")
+    remember_category(category)
 
     gallery = []
     for image in item_images:
@@ -782,7 +861,7 @@ async def add_item(
     item = {
         "id": f"item_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}",
         "title": title.strip(),
-        "category": category.strip(),
+        "category": category,
         "type": "image",
         "url": gallery[0]["url"],
         "images": gallery,

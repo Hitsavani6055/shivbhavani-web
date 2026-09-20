@@ -248,14 +248,9 @@
                                 placeholder="Choose or type a new category"
                                 class="admin-input w-full border rounded-lg p-2 text-xs">
                             <datalist id="categoryOptions">
-                                <option value="Safa & Paghdi"></option>
-                                <option value="Jodhpuri"></option>
-                                <option value="Achkan"></option>
-                                <option value="Indo-Western"></option>
-                                <option value="Angarkha"></option>
-                                <option value="Talwar & Accessories"></option>
-                                <option value="Sherwani"></option>
-                                <option value="Wedding Accessories"></option>
+                                {% for category in categories %}
+                                <option value="{{ category }}"></option>
+                                {% endfor %}
                             </datalist>
                             <p class="text-[10px] text-stone-500 mt-1">Select a suggestion or type any new category.</p>
                         </div>
@@ -327,6 +322,34 @@
                         <i class="fas fa-cloud-arrow-up mr-1"></i> Upload to Website
                     </button>
                 </form>
+            </div>
+
+            <div class="admin-card order-5 lg:order-5 lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-2 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-tags text-amber-600"></i> Manage Media Categories
+                </h3>
+                <p class="text-xs text-stone-500 mb-4">Add a category here and it will appear in Add New Media. Categories are saved for future uploads.</p>
+                <form action="/api/admin/categories/add" method="POST" class="flex flex-col sm:flex-row gap-2 mb-4">
+                    <input name="category" required maxlength="60" placeholder="e.g. Sehra, Mojdi, Custom Collection"
+                        class="admin-input flex-1 border rounded-lg p-2 text-xs">
+                    <button class="bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg px-4 py-2 text-xs">
+                        <i class="fas fa-plus mr-1"></i> Add Category
+                    </button>
+                </form>
+                <div class="flex flex-wrap gap-2">
+                    {% for category in categories %}
+                    <div class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-900">
+                        <span>{{ category }}</span>
+                        <form action="/api/admin/categories/delete" method="POST"
+                            onsubmit="return confirm('Delete this category from future suggestions? Existing media will not be deleted.')">
+                            <input type="hidden" name="category" value="{{ category }}">
+                            <button type="submit" aria-label="Delete {{ category }}" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
 
             <!-- Live Design Controls -->

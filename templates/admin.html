@@ -244,14 +244,20 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold mb-1">Category *</label>
-                            <select name="category" class="admin-input w-full border rounded-lg p-2 text-xs">
-                                <option value="Safa & Paghdi">Safa & Paghdi</option>
-                                <option value="Jodhpuri">Jodhpuri</option>
-                                <option value="Achkan">Achkan</option>
-                                <option value="Indo-Western">Indo-Western</option>
-                                <option value="Angarkha">Angarkha</option>
-                                <option value="Talwar & Accessories">Talwar & Accessories</option>
-                            </select>
+                            <input type="text" name="category" list="categoryOptions" required
+                                placeholder="Choose or type a new category"
+                                class="admin-input w-full border rounded-lg p-2 text-xs">
+                            <datalist id="categoryOptions">
+                                <option value="Safa & Paghdi"></option>
+                                <option value="Jodhpuri"></option>
+                                <option value="Achkan"></option>
+                                <option value="Indo-Western"></option>
+                                <option value="Angarkha"></option>
+                                <option value="Talwar & Accessories"></option>
+                                <option value="Sherwani"></option>
+                                <option value="Wedding Accessories"></option>
+                            </datalist>
+                            <p class="text-[10px] text-stone-500 mt-1">Select a suggestion or type any new category.</p>
                         </div>
                     </div>
 

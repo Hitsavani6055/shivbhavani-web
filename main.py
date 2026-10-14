@@ -70,6 +70,9 @@ app = FastAPI(
 
 RENDER_DISK_DIR = "/opt/render/project/src/persistent"
 configured_data_dir = os.getenv("PERSISTENT_DATA_DIR", "").strip()
+allow_ephemeral_storage = os.getenv("ALLOW_EPHEMERAL_STORAGE", "").strip().lower() in {
+    "1", "true", "yes"
+}
 if configured_data_dir and not os.path.isdir(configured_data_dir):
     if os.path.isdir(RENDER_DISK_DIR):
         logger.warning(
@@ -78,6 +81,12 @@ if configured_data_dir and not os.path.isdir(configured_data_dir):
             RENDER_DISK_DIR
         )
         configured_data_dir = RENDER_DISK_DIR
+    elif allow_ephemeral_storage:
+        logger.warning(
+            "PERSISTENT_DATA_DIR does not exist: %s. Ephemeral storage is explicitly enabled.",
+            configured_data_dir
+        )
+        configured_data_dir = ""
     else:
         raise RuntimeError(
             f"PERSISTENT_DATA_DIR does not exist: {configured_data_dir}, "
@@ -89,7 +98,9 @@ if configured_data_dir and not os.access(configured_data_dir, os.W_OK):
         f"PERSISTENT_DATA_DIR is not writable: {configured_data_dir}. "
         "Verify the persistent disk permissions before starting the app."
     )
-PERSISTENT_DATA_DIR = configured_data_dir or (RENDER_DISK_DIR if os.path.isdir(RENDER_DISK_DIR) else ".")
+PERSISTENT_DATA_DIR = configured_data_dir or (
+    RENDER_DISK_DIR if os.path.isdir(RENDER_DISK_DIR) else "."
+)
 UPLOAD_DIR = os.path.join(PERSISTENT_DATA_DIR, "uploads") if PERSISTENT_DATA_DIR != "." else os.path.join("static", "uploads")
 MEDIA_URL_PREFIX = "/media" if PERSISTENT_DATA_DIR != "." else "/static/uploads"
 PUBLIC_SITE_URL = os.getenv("SITE_URL", "").strip().rstrip("/")

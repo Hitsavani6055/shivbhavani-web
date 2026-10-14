@@ -11,6 +11,12 @@
 
 <body class="admin-shell bg-stone-100 text-stone-800 font-sans min-h-screen">
     <style>
+        :root {
+            --admin-wine: #5b0e1e;
+            --admin-wine-dark: #3d0914;
+            --admin-gold: #c5a059;
+            --admin-ivory: #fbf8f1;
+        }
         html, body {
             width: 100%;
             max-width: 100%;
@@ -20,11 +26,14 @@
             width: min(100% - 1.5rem, 28rem);
         }
         .admin-shell {
-            background: radial-gradient(circle at 8% 0%, rgba(197, 160, 89, .16), transparent 28%), #f5f1eb;
+            background:
+                radial-gradient(circle at 8% 0%, rgba(197, 160, 89, .16), transparent 28%),
+                linear-gradient(135deg, var(--admin-ivory), #f4ede2);
         }
         .admin-card {
-            border-color: rgba(197, 160, 89, .28);
-            box-shadow: 0 14px 35px rgba(84, 18, 30, .06);
+            border-color: rgba(197, 160, 89, .34);
+            background-color: #fffdf9;
+            box-shadow: 0 14px 35px rgba(84, 18, 30, .07);
         }
         .admin-card h3 {
             letter-spacing: .015em;
@@ -34,9 +43,58 @@
             background: #fffdfa;
         }
         .admin-input:focus {
-            border-color: #c5a059;
-            box-shadow: 0 0 0 3px rgba(197, 160, 89, .16);
+            border-color: var(--admin-gold);
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, .2);
             outline: none;
+        }
+        .admin-header {
+            background: linear-gradient(112deg, var(--admin-wine-dark), var(--admin-wine) 62%, #6d1727) !important;
+            box-shadow: 0 10px 28px rgba(61, 9, 20, .18);
+        }
+        .admin-header h1 {
+            color: #f0d69c !important;
+            letter-spacing: .025em;
+        }
+        .admin-header > div:first-child > span {
+            border: 1px solid rgba(240, 214, 156, .22);
+            color: #f3e5c7;
+        }
+        .admin-header a.bg-stone-800 {
+            border: 1px solid rgba(240, 214, 156, .42);
+            background-color: rgba(255, 255, 255, .08) !important;
+            color: #fff8e9 !important;
+        }
+        .admin-header a.bg-stone-800:hover {
+            background-color: rgba(255, 255, 255, .16) !important;
+        }
+        .admin-shell button.bg-stone-900,
+        .admin-shell a.bg-stone-900 {
+            background-color: var(--admin-wine) !important;
+            color: #fff8e9 !important;
+        }
+        .admin-shell button.bg-stone-900:hover,
+        .admin-shell a.bg-stone-900:hover {
+            background-color: var(--admin-wine-dark) !important;
+        }
+        .admin-shell button.bg-amber-600 {
+            background-color: #8c671f !important;
+            color: #fffdf8 !important;
+        }
+        .admin-shell button.bg-amber-600:hover {
+            background-color: #705116 !important;
+        }
+        .admin-shell button:focus-visible,
+        .admin-shell a:focus-visible {
+            outline: 3px solid rgba(197, 160, 89, .68);
+            outline-offset: 2px;
+        }
+        .admin-login {
+            border: 1px solid rgba(197, 160, 89, .3);
+            background-color: #fffdf9;
+            box-shadow: 0 22px 55px rgba(61, 9, 20, .1);
+        }
+        .admin-login .fa-lock {
+            color: var(--admin-gold) !important;
         }
         .admin-section-title {
             letter-spacing: .02em;
@@ -59,19 +117,36 @@
         }
         .upload-preview {
             display: none;
+            align-items: flex-start;
             gap: .5rem;
             overflow-x: auto;
             padding: .35rem 0;
             scrollbar-width: thin;
         }
         .upload-preview.has-images { display: flex; }
-        .upload-preview img {
-            width: 72px;
-            height: 72px;
-            flex: 0 0 72px;
-            object-fit: cover;
+        .upload-preview-item {
+            flex: 0 0 auto;
+            max-width: 180px;
+            margin: 0;
+        }
+        .upload-preview-item img,
+        .upload-preview-item video {
+            display: block;
+            max-width: 180px;
+            max-height: 180px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
             border-radius: .75rem;
             border: 1px solid rgba(197, 160, 89, .55);
+            background: #1c1917;
+        }
+        .upload-preview-item figcaption {
+            max-width: 180px;
+            margin-top: .3rem;
+            color: #78716c;
+            font-size: 10px;
+            overflow-wrap: anywhere;
         }
         @media (max-width: 640px) {
             .admin-header {
@@ -168,6 +243,131 @@
     {% else %}
     <!-- Admin Management Dashboard -->
     <div class="admin-dashboard max-w-6xl mx-auto py-8 px-4 grid lg:grid-cols-3 gap-8">
+        <section class="admin-card lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border"
+            aria-labelledby="heroPhotoTitle">
+            <h2 id="heroPhotoTitle" class="font-bold text-base text-stone-900 mb-2 flex items-center gap-2">
+                <i class="fas fa-crown text-amber-600"></i> Homepage Royal Photo
+            </h2>
+            <p class="text-xs text-stone-600 mb-4">
+                Upload a photo to use only in the homepage hero, or choose an image already in your collection.
+            </p>
+            {% if hero_updated %}
+            <p class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800"
+                role="status">Homepage photo updated successfully.</p>
+            {% endif %}
+            <div class="mb-5 grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
+                <img src="{{ hero_media.url if hero_media else logo_url }}"
+                    alt="Current homepage hero photo"
+                    {% if (hero_media.url if hero_media else logo_url)|webp_url %}
+                    srcset="{{ (hero_media.url if hero_media else logo_url)|webp_url }} 1x"{% endif %}
+                    loading="lazy" decoding="async"
+                    class="h-32 w-full rounded-xl border border-amber-200 bg-stone-100 object-contain">
+                <div>
+                    <p class="text-xs font-semibold text-stone-800">Current homepage photo</p>
+                    <p class="mt-1 text-xs text-stone-500">
+                        {{ hero_media.title if hero_media else "Brand logo (no homepage photo selected)" }}
+                    </p>
+                </div>
+            </div>
+            {% if hero_images %}
+            <form action="/api/admin/hero-media" method="POST"
+                class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px_auto] sm:items-end">
+                <label class="block text-xs font-semibold">
+                    Hero photo
+                    <select name="media_id" id="heroMediaSelect" required
+                        class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                        {% if hero_media_id == "uploaded-hero" %}
+                        <option value="" selected disabled>Homepage-only photo is active — choose a collection photo to switch</option>
+                        {% endif %}
+                        {% for image in hero_images %}
+                        <option value="{{ image.id }}" data-image-url="{{ image.url }}"
+                            {% if image.id == hero_media_id %}selected{% endif %}>
+                            {{ image.title }} · {{ image.category }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <img id="heroMediaPreview"
+                    src="{{ hero_media.url if hero_media else hero_images[0].url }}"
+                    {% if (hero_media.url if hero_media else hero_images[0].url)|webp_url %}
+                    srcset="{{ (hero_media.url if hero_media else hero_images[0].url)|webp_url }} 1x"{% endif %}
+                    alt="Selected homepage photo preview"
+                    loading="lazy" decoding="async"
+                    class="h-28 w-full rounded-xl border border-amber-200 bg-stone-100 object-contain">
+                <button type="submit"
+                    class="rounded-lg bg-stone-900 px-5 py-2.5 text-xs font-bold text-amber-300 transition hover:bg-black">
+                    Save Homepage Photo
+                </button>
+            </form>
+            {% endif %}
+            <form action="/api/admin/hero-media/upload" method="POST" enctype="multipart/form-data"
+                class="mt-5 grid gap-3 border-t border-stone-100 pt-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                <label class="block text-xs font-semibold text-stone-800">
+                    Upload a new homepage photo
+                    <input type="file" name="file" accept="image/jpeg,image/png,image/webp" required
+                        class="admin-input mt-1 w-full rounded-lg border p-2.5 text-xs"
+                        aria-describedby="heroUploadHelp">
+                    <span id="heroUploadHelp" class="mt-1 block font-normal text-stone-500">
+                        JPG, PNG, or WEBP · up to 30 MB · this image will not be added as a catalog item
+                    </span>
+                </label>
+                <button type="submit"
+                    class="rounded-lg bg-velvetWine px-5 py-2.5 text-xs font-bold text-white transition hover:bg-black">
+                    Upload and Use This Photo
+                </button>
+            </form>
+        </section>
+
+        <section class="admin-card lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border"
+            aria-labelledby="instagramSyncTitle">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 id="instagramSyncTitle" class="font-bold text-base text-stone-900 flex items-center gap-2">
+                        <i class="fab fa-instagram text-pink-600"></i> Instagram Auto Import
+                    </h2>
+                    <p class="text-xs text-stone-600 mt-1">{{ instagram_sync.message }}</p>
+                    {% if instagram_sync.last_sync_at %}
+                    <p class="text-[10px] text-stone-500 mt-1">
+                        Last sync: {{ instagram_sync.last_sync_at }} · Imported {{ instagram_sync.imported }}
+                        · Skipped {{ instagram_sync.skipped }}
+                    </p>
+                    {% endif %}
+                    {% if instagram_sync.errors %}
+                    <ul class="mt-2 list-disc pl-5 text-[10px] text-red-700">
+                        {% for sync_error in instagram_sync.errors %}
+                        <li>{{ sync_error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if not instagram_sync.configured %}
+                    <p class="text-[10px] text-stone-500 mt-2">
+                        Configure the token and account ID in local .env or the hosting environment, then restart the app.
+                        Keep the access token private.
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="rounded-full px-3 py-1 text-[10px] font-bold
+                        {% if instagram_sync.status == 'success' or instagram_sync.status == 'ready' %}bg-emerald-100 text-emerald-800
+                        {% elif instagram_sync.status == 'needs_configuration' %}bg-amber-100 text-amber-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ instagram_sync.status|replace('_', ' ')|upper }}
+                    </span>
+                    <form action="/api/admin/instagram-sync" method="POST">
+                        <button type="submit" {% if not instagram_sync.configured %}disabled{% endif %}
+                            class="rounded-lg bg-stone-900 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50">
+                            <i class="fas fa-rotate mr-1"></i> Sync Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% if instagram_sync.configured %}
+            <p class="mt-3 text-[10px] text-stone-500">
+                New Instagram photos and Reels are checked every {{ instagram_sync.interval_seconds }} seconds.
+                Media is copied to this site and original aspect ratios are preserved.
+            </p>
+            {% endif %}
+        </section>
 
         <!-- Left: Upload New Media -->
         <div class="space-y-6 flex flex-col lg:contents">
@@ -284,6 +484,12 @@
                             </select>
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Occasions</label>
+                        <input name="occasions" maxlength="160" placeholder="wedding, baraat, reception"
+                            class="admin-input w-full border rounded-lg p-2 text-xs">
+                        <p class="text-[10px] text-stone-500 mt-1">Comma-separated tags used by the occasion finder.</p>
+                    </div>
                     <input name="price_label" placeholder="Optional: Rent from ₹___ / Buy available"
                         class="admin-input w-full border rounded-lg p-2 text-xs">
 
@@ -294,9 +500,10 @@
 
                     <div>
                         <label class="block text-xs font-semibold mb-1">Video or Single Media File</label>
-                        <input type="file" name="files" accept="video/*,image/*"
+                        <input type="file" name="files" accept="video/*,image/*" id="singleMediaInput"
                             class="admin-input w-full border rounded-lg p-1.5 text-xs">
                         <p class="text-[10px] text-stone-500 mt-1">Video maximum 200 MB. Single image maximum 30 MB.</p>
+                        <div id="singleMediaPreview" class="upload-preview" aria-label="Selected media preview"></div>
                     </div>
 
                     <div>
@@ -388,7 +595,10 @@
                 </h3>
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-16 h-16 rounded-full border bg-stone-50 flex items-center justify-center p-2">
-                        <img src="{{ logo_url }}" alt="Current site logo" class="max-w-full max-h-full object-contain">
+                        <img src="{{ logo_url }}"
+                            {% if logo_url|webp_url %}srcset="{{ logo_url|webp_url }} 1x"{% endif %}
+                            alt="Current site logo" loading="lazy" decoding="async"
+                            class="max-w-full max-h-full object-contain">
                     </div>
 
                     <!-- Business Settings -->
@@ -648,6 +858,9 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        <input name="occasions" value="{{ item.occasions|default('') }}" maxlength="160"
+                            placeholder="Occasions: wedding, baraat, reception"
+                            class="w-full border rounded-lg p-2 text-xs">
                         <input name="price_label" value="{{ item.price_label|default('') }}" placeholder="Rent / sale label"
                             class="w-full border rounded-lg p-2 text-xs">
                         <label class="flex items-center gap-2 text-xs"><input type="checkbox" name="featured"
@@ -685,19 +898,68 @@
 
     const itemImagesInput = document.getElementById('itemImagesInput');
     const uploadPreview = document.getElementById('uploadPreview');
-    if (itemImagesInput && uploadPreview) {
-        itemImagesInput.addEventListener('change', () => {
-            uploadPreview.replaceChildren();
-            const files = Array.from(itemImagesInput.files || []).filter(file => file.type.startsWith('image/'));
-            files.forEach(file => {
-                const image = document.createElement('img');
-                image.alt = file.name;
-                image.src = URL.createObjectURL(file);
-                uploadPreview.appendChild(image);
-            });
-            uploadPreview.classList.toggle('has-images', files.length > 0);
+    const singleMediaInput = document.getElementById('singleMediaInput');
+    const singleMediaPreview = document.getElementById('singleMediaPreview');
+    const heroMediaSelect = document.getElementById('heroMediaSelect');
+    const heroMediaPreview = document.getElementById('heroMediaPreview');
+    heroMediaSelect?.addEventListener('change', () => {
+        const selectedOption = heroMediaSelect.selectedOptions[0];
+        if (selectedOption && heroMediaPreview) {
+            heroMediaPreview.src = selectedOption.dataset.imageUrl || '';
+            heroMediaPreview.alt = `Preview: ${selectedOption.textContent.trim()}`;
+        }
+    });
+
+    function showUploadPreviews(input, preview) {
+        if (!input || !preview) return;
+        preview.querySelectorAll('[data-preview-url]').forEach(item => {
+            URL.revokeObjectURL(item.dataset.previewUrl);
         });
+        preview.replaceChildren();
+        const files = Array.from(input.files || []);
+        files.forEach(file => {
+            if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) return;
+            const mediaUrl = URL.createObjectURL(file);
+            const figure = document.createElement('figure');
+            figure.className = 'upload-preview-item';
+            figure.dataset.previewUrl = mediaUrl;
+            const media = document.createElement(file.type.startsWith('video/') ? 'video' : 'img');
+            media.src = mediaUrl;
+            if (media instanceof HTMLVideoElement) {
+                media.muted = true;
+                media.playsInline = true;
+                media.preload = 'metadata';
+            } else {
+                media.alt = file.name;
+            }
+            const caption = document.createElement('figcaption');
+            caption.textContent = `${file.name} · Loading dimensions…`;
+            media.addEventListener(media instanceof HTMLVideoElement ? 'loadedmetadata' : 'load', () => {
+                const width = media instanceof HTMLVideoElement ? media.videoWidth : media.naturalWidth;
+                const height = media instanceof HTMLVideoElement ? media.videoHeight : media.naturalHeight;
+                if (width && height) {
+                    const divisor = gcd(width, height);
+                    caption.textContent = `${file.name} · ${width} × ${height} (${width / divisor}:${height / divisor})`;
+                } else {
+                    caption.textContent = `${file.name} · Dimensions unavailable`;
+                }
+            });
+            media.addEventListener('error', () => {
+                caption.textContent = `${file.name} · Preview unavailable`;
+            }, { once: true });
+            figure.append(media, caption);
+            preview.appendChild(figure);
+        });
+        preview.classList.toggle('has-images', preview.childElementCount > 0);
     }
+
+    function gcd(a, b) {
+        while (b) [a, b] = [b, a % b];
+        return a;
+    }
+
+    itemImagesInput?.addEventListener('change', () => showUploadPreviews(itemImagesInput, uploadPreview));
+    singleMediaInput?.addEventListener('change', () => showUploadPreviews(singleMediaInput, singleMediaPreview));
 
     const mediaUploadForm = document.getElementById('mediaUploadForm');
     if (mediaUploadForm) {

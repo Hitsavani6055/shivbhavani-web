@@ -14,6 +14,16 @@ services:
         value: 919925245246
       - key: INSTAGRAM_HANDLE
         value: shivbhavani_safa_bhavnagar
+      - key: SITE_URL
+        sync: false
+      - key: INSTAGRAM_ACCESS_TOKEN
+        sync: false
+      - key: INSTAGRAM_ACCOUNT_ID
+        sync: false
+      - key: INSTAGRAM_GRAPH_API_BASE_URL
+        value: https://graph.facebook.com/v24.0
+      - key: INSTAGRAM_SYNC_INTERVAL_SECONDS
+        value: "300"
       - key: PERSISTENT_DATA_DIR
         value: /opt/render/project/src/persistent
     disk:

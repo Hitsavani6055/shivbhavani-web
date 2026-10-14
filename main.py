@@ -1,6 +1,17 @@
+import asyncio
+from contextlib import asynccontextmanager, suppress
 from fastapi import FastAPI, Request, Form, UploadFile, File, HTTPException, status, Response
+import logging
+import threading
 from typing import List
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    StreamingResponse,
+)
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import uvicorn
@@ -12,21 +23,67 @@ import secrets
 import shutil
 import uuid
 import hmac
+import mimetypes
+import xml.etree.ElementTree as ET
+from urllib.parse import unquote, urlsplit
 from dotenv import load_dotenv
+from PIL import Image, ImageOps
+from instagram_sync import (
+    InstagramSyncError,
+    download_instagram_media,
+    fetch_instagram_media,
+    instagram_is_configured,
+)
 
 load_dotenv()
+mimetypes.add_type("image/webp", ".webp")
+
+logger = logging.getLogger(__name__)
+INSTAGRAM_SYNC_INTERVAL_SECONDS = int(os.getenv("INSTAGRAM_SYNC_INTERVAL_SECONDS", "300"))
+if not 60 <= INSTAGRAM_SYNC_INTERVAL_SECONDS <= 3600:
+    raise ValueError("INSTAGRAM_SYNC_INTERVAL_SECONDS must be between 60 and 3600.")
+INSTAGRAM_SYNC_LOCK = threading.Lock()
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    sync_task = None
+    if instagram_is_configured():
+        sync_task = asyncio.create_task(instagram_sync_loop())
+    else:
+        logger.info("Instagram auto-sync is disabled until its server credentials are configured.")
+    try:
+        yield
+    finally:
+        if sync_task:
+            sync_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await sync_task
+
 
 app = FastAPI(
     title="Shivbhavani Safa Paghdi",
     description="Developed by Hit Savani",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan,
 )
 
 RENDER_DISK_DIR = "/opt/render/project/src/persistent"
 configured_data_dir = os.getenv("PERSISTENT_DATA_DIR", "").strip()
+if configured_data_dir and not os.path.isdir(configured_data_dir):
+    raise RuntimeError(
+        f"PERSISTENT_DATA_DIR does not exist: {configured_data_dir}. "
+        "Verify the persistent disk is mounted before starting the app."
+    )
+if configured_data_dir and not os.access(configured_data_dir, os.W_OK):
+    raise RuntimeError(
+        f"PERSISTENT_DATA_DIR is not writable: {configured_data_dir}. "
+        "Verify the persistent disk permissions before starting the app."
+    )
 PERSISTENT_DATA_DIR = configured_data_dir or (RENDER_DISK_DIR if os.path.isdir(RENDER_DISK_DIR) else ".")
 UPLOAD_DIR = os.path.join(PERSISTENT_DATA_DIR, "uploads") if PERSISTENT_DATA_DIR != "." else os.path.join("static", "uploads")
 MEDIA_URL_PREFIX = "/media" if PERSISTENT_DATA_DIR != "." else "/static/uploads"
+PUBLIC_SITE_URL = os.getenv("SITE_URL", "").strip().rstrip("/")
 MAX_VIDEO_BYTES = 200 * 1024 * 1024
 MAX_IMAGE_BYTES = 30 * 1024 * 1024
 
@@ -44,19 +101,161 @@ if PERSISTENT_DATA_DIR != ".":
     for data_filename in (
         "collection.json", "business.json", "design.json",
         "admin_history.json", "inquiries.json", "orders.json", "logo_config.json",
-        "categories.json"
+        "categories.json", "hero_config.json"
     ):
         source = data_filename
         target = os.path.join(PERSISTENT_DATA_DIR, data_filename)
         if os.path.isfile(source) and not os.path.exists(target):
             shutil.copy2(source, target)
 
+
+def uploaded_file_path(directory: str, filename: str) -> str:
+    if not filename or filename != os.path.basename(filename):
+        raise HTTPException(status_code=404, detail="Media file not found")
+    base_dir = os.path.realpath(directory)
+    filepath = os.path.realpath(os.path.join(base_dir, filename))
+    if os.path.commonpath((base_dir, filepath)) != base_dir or not os.path.isfile(filepath):
+        raise HTTPException(status_code=404, detail="Media file not found")
+    return filepath
+
+
+def iter_file_range(filepath: str, start: int, end: int):
+    with open(filepath, "rb") as media_file:
+        media_file.seek(start)
+        remaining = end - start + 1
+        while remaining:
+            chunk = media_file.read(min(256 * 1024, remaining))
+            if not chunk:
+                break
+            remaining -= len(chunk)
+            yield chunk
+
+
+def uploaded_file_response(request: Request, filepath: str):
+    size = os.path.getsize(filepath)
+    headers = {"Accept-Ranges": "bytes"}
+    range_header = request.headers.get("range")
+    if not range_header:
+        return FileResponse(filepath, headers=headers)
+
+    range_match = re.fullmatch(r"bytes=(\d*)-(\d*)", range_header.strip())
+    if not range_match or not any(range_match.groups()):
+        return Response(
+            status_code=416,
+            headers={**headers, "Content-Range": f"bytes */{size}"}
+        )
+
+    first, last = range_match.groups()
+    if first:
+        start = int(first)
+        end = int(last) if last else size - 1
+    else:
+        suffix_length = int(last)
+        if suffix_length <= 0:
+            return Response(
+                status_code=416,
+                headers={**headers, "Content-Range": f"bytes */{size}"}
+            )
+        start = max(size - suffix_length, 0)
+        end = size - 1
+
+    if start >= size or end < start:
+        return Response(
+            status_code=416,
+            headers={**headers, "Content-Range": f"bytes */{size}"}
+        )
+    end = min(end, size - 1)
+    headers.update({
+        "Content-Range": f"bytes {start}-{end}/{size}",
+        "Content-Length": str(end - start + 1)
+    })
+    media_type = mimetypes.guess_type(filepath)[0] or "application/octet-stream"
+    if request.method == "HEAD":
+        return Response(status_code=206, media_type=media_type, headers=headers)
+    return StreamingResponse(
+        iter_file_range(filepath, start, end),
+        status_code=206,
+        media_type=media_type,
+        headers=headers
+    )
+
+
+@app.api_route("/static/uploads/{filename}", methods=["GET", "HEAD"], include_in_schema=False)
+async def serve_static_upload(request: Request, filename: str):
+    upload_dir = os.path.join("static", "uploads")
+    return uploaded_file_response(request, uploaded_file_path(upload_dir, filename))
+
+
+@app.api_route("/media/{filename}", methods=["GET", "HEAD"], include_in_schema=False)
+async def serve_persistent_upload(request: Request, filename: str):
+    return uploaded_file_response(request, uploaded_file_path(UPLOAD_DIR, filename))
+
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/media", StaticFiles(directory=UPLOAD_DIR), name="media")
 templates = Jinja2Templates(directory="templates")
 
+
+def create_webp_variant(filepath: str) -> str | None:
+    if os.path.splitext(filepath)[1].lower() not in {".jpg", ".jpeg", ".png"}:
+        return None
+
+    webp_path = os.path.splitext(filepath)[0] + ".webp"
+    temporary_path = webp_path + ".tmp"
+    try:
+        with Image.open(filepath) as source:
+            image = ImageOps.exif_transpose(source)
+            has_alpha = "A" in image.getbands() or "transparency" in image.info
+            image = image.convert("RGBA" if has_alpha else "RGB")
+            image.save(temporary_path, format="WEBP", quality=84, method=6)
+        if os.path.getsize(temporary_path) >= os.path.getsize(filepath):
+            os.remove(temporary_path)
+            logger.info("Keeping original image because its WebP variant is not smaller: %s", filepath)
+            return None
+        os.replace(temporary_path, webp_path)
+    except OSError:
+        if os.path.exists(temporary_path):
+            os.remove(temporary_path)
+        raise
+    return webp_path
+
+
+def webp_variant_url(source_url: str | None) -> str:
+    if not source_url:
+        return ""
+    parsed_url = urlsplit(source_url)
+    if parsed_url.scheme or parsed_url.netloc:
+        return ""
+
+    source_path = unquote(parsed_url.path)
+    if source_path.startswith("/static/"):
+        base_dir = os.path.realpath("static")
+        relative_path = source_path[len("/static/"):]
+    elif source_path.startswith(f"{MEDIA_URL_PREFIX}/"):
+        base_dir = os.path.realpath(UPLOAD_DIR)
+        relative_path = source_path[len(MEDIA_URL_PREFIX) + 1:]
+    else:
+        return ""
+
+    if os.path.splitext(relative_path)[1].lower() not in {".jpg", ".jpeg", ".png"}:
+        return ""
+    variant_path = os.path.realpath(
+        os.path.join(base_dir, os.path.splitext(relative_path)[0] + ".webp")
+    )
+    if os.path.commonpath((base_dir, variant_path)) != base_dir or not os.path.isfile(variant_path):
+        return ""
+    return os.path.splitext(source_path)[0] + ".webp"
+
+
+templates.env.filters["webp_url"] = webp_variant_url
+
+
 def persistent_file(filename):
     return os.path.join(PERSISTENT_DATA_DIR, filename) if PERSISTENT_DATA_DIR != "." else filename
+
+
+def get_public_site_url(request: Request) -> str:
+    return PUBLIC_SITE_URL or str(request.base_url).rstrip("/")
 
 
 def save_upload(upload: UploadFile, filepath: str, max_bytes: int, media_label: str):
@@ -74,6 +273,8 @@ def save_upload(upload: UploadFile, filepath: str, max_bytes: int, media_label: 
                         detail=f"{media_label} is too large. Maximum allowed size is {max_bytes // (1024 * 1024)} MB."
                     )
                 buffer.write(chunk)
+        if media_label.lower() != "video":
+            create_webp_variant(filepath)
     except HTTPException:
         if os.path.exists(filepath):
             os.remove(filepath)
@@ -93,6 +294,8 @@ LOGO_CONFIG_FILE = persistent_file("logo_config.json")
 DESIGN_FILE = persistent_file("design.json")
 BUSINESS_FILE = persistent_file("business.json")
 CATEGORY_FILE = persistent_file("categories.json")
+HERO_CONFIG_FILE = persistent_file("hero_config.json")
+INSTAGRAM_SYNC_FILE = persistent_file("instagram_sync.json")
 DEFAULT_LOGO_URL = "/static/logo.svg"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "S@vani6055")
 ACTIVE_ADMIN_SESSIONS = set()
@@ -195,6 +398,8 @@ def get_collection():
                 item.setdefault("badge", "Royal Look")
                 item.setdefault("description", "")
                 item.setdefault("colors", "")
+                if not isinstance(item.get("occasions"), str) or not item["occasions"].strip():
+                    item["occasions"] = "Wedding"
                 item.setdefault("availability", "Available")
                 item.setdefault("price_label", "")
                 item.setdefault("featured", False)
@@ -211,6 +416,67 @@ def get_collection():
             return [item for item in collection if media_file_exists(item)]
     except Exception:
         return DEFAULT_COLLECTION
+
+
+def get_hero_media(items):
+    image_items = [item for item in items if item.get("type") == "image"]
+    if os.path.exists(HERO_CONFIG_FILE):
+        try:
+            with open(HERO_CONFIG_FILE, "r", encoding="utf-8") as config_file:
+                hero_config = json.load(config_file)
+            selected_id = hero_config.get("media_id", "")
+            selected = next(
+                (item for item in image_items if item.get("id") == selected_id),
+                None
+            )
+            if selected:
+                return selected
+            configured_url = hero_config.get("url", "")
+            media_prefix = f"{MEDIA_URL_PREFIX}/"
+            if isinstance(configured_url, str) and configured_url.startswith(media_prefix):
+                filename = configured_url[len(media_prefix):]
+                if filename and os.path.basename(filename) == filename:
+                    filepath = os.path.join(UPLOAD_DIR, filename)
+                    if os.path.isfile(filepath):
+                        return {
+                            "id": "uploaded-hero",
+                            "title": hero_config.get("title", "Homepage Royal Photo"),
+                            "category": "Homepage",
+                            "type": "image",
+                            "url": configured_url
+                        }
+            logger.warning("Configured hero photo is no longer available.")
+        except (OSError, json.JSONDecodeError, AttributeError):
+            logger.exception("Could not read configured hero photo.")
+    if not image_items:
+        return None
+    royal_headwear = ("paghdi", "pagdi", "safa", "turban")
+    matching_item = next(
+        (
+            item for item in image_items
+            if any(
+                term in f"{item.get('title', '')} {item.get('category', '')}".casefold()
+                for term in royal_headwear
+            )
+        ),
+        None
+    )
+    if matching_item:
+        return matching_item
+    return None
+
+
+def save_hero_config(config):
+    temporary_path = f"{HERO_CONFIG_FILE}.{uuid.uuid4().hex}.tmp"
+    try:
+        with open(temporary_path, "w", encoding="utf-8") as config_file:
+            json.dump(config, config_file, indent=4, ensure_ascii=False)
+        os.replace(temporary_path, HERO_CONFIG_FILE)
+    except OSError as error:
+        if os.path.exists(temporary_path):
+            os.remove(temporary_path)
+        logger.exception("Could not save the homepage hero photo.")
+        raise HTTPException(status_code=500, detail="Could not save the homepage hero photo.") from error
 
 
 def media_file_exists(item):
@@ -321,6 +587,200 @@ def remember_category(category):
         save_categories(get_categories() + [category])
 
 
+def get_instagram_sync_status():
+    configured = instagram_is_configured()
+    default_state = {
+        "status": "ready" if configured else "needs_configuration",
+        "last_sync_at": "",
+        "imported": 0,
+        "skipped": 0,
+        "message": "" if configured else (
+            "Set INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_ACCOUNT_ID in the server environment."
+        ),
+        "interval_seconds": INSTAGRAM_SYNC_INTERVAL_SECONDS,
+        "errors": []
+    }
+    if not os.path.exists(INSTAGRAM_SYNC_FILE):
+        return {**default_state, "configured": configured}
+    try:
+        with open(INSTAGRAM_SYNC_FILE, "r", encoding="utf-8") as sync_file:
+            state = json.load(sync_file)
+        if not isinstance(state, dict):
+            raise ValueError("Instagram sync status must be a JSON object.")
+        return {**default_state, **state, "configured": configured}
+    except (OSError, json.JSONDecodeError, ValueError) as error:
+        logger.exception("Could not read Instagram sync status.")
+        return {
+            **default_state,
+            "status": "error",
+            "message": f"Could not read sync status: {error}",
+            "configured": configured
+        }
+
+
+def save_instagram_sync_status(sync_status):
+    temporary_path = f"{INSTAGRAM_SYNC_FILE}.{uuid.uuid4().hex}.tmp"
+    try:
+        with open(temporary_path, "w", encoding="utf-8") as sync_file:
+            json.dump(sync_status, sync_file, indent=4, ensure_ascii=False)
+        os.replace(temporary_path, INSTAGRAM_SYNC_FILE)
+    except OSError:
+        if os.path.exists(temporary_path):
+            os.remove(temporary_path)
+        raise
+
+
+def sync_instagram_media():
+    if not INSTAGRAM_SYNC_LOCK.acquire(blocking=False):
+        return {**get_instagram_sync_status(), "status": "running", "message": "A sync is already running."}
+
+    try:
+        if not instagram_is_configured():
+            result = {
+                **get_instagram_sync_status(),
+                "status": "needs_configuration",
+                "message": "Set INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_ACCOUNT_ID in the server environment."
+            }
+            save_instagram_sync_status(result)
+            return result
+
+        feed = fetch_instagram_media()
+        items = get_collection()
+        imported_ids = {
+            str(item.get("instagram_media_id"))
+            for item in items
+            if item.get("instagram_media_id")
+        }
+        new_items = []
+        errors = []
+        skipped = 0
+
+        for post in feed:
+            media_id = str(post.get("id", "")).strip()
+            media_type = str(post.get("media_type", "")).upper()
+            if not media_id or media_id in imported_ids:
+                skipped += 1
+                continue
+            if media_type not in {"IMAGE", "VIDEO"}:
+                skipped += 1
+                continue
+
+            media_url = str(post.get("media_url", "")).strip()
+            if not media_url:
+                errors.append(f"{media_id}: Meta did not provide a media URL.")
+                continue
+
+            try:
+                filename = download_instagram_media(media_url, media_type, UPLOAD_DIR)
+            except InstagramSyncError as error:
+                errors.append(f"{media_id}: {error}")
+                continue
+
+            media_kind = "video" if media_type == "VIDEO" else "image"
+            if media_kind == "image":
+                try:
+                    create_webp_variant(os.path.join(UPLOAD_DIR, filename))
+                except OSError as error:
+                    logger.exception("Could not create WebP variant for Instagram image %s", media_id)
+                    errors.append(f"{media_id}: imported original image, but WebP optimization failed: {error}")
+            caption = str(post.get("caption", "")).strip()
+            title = next(
+                (line.strip() for line in caption.splitlines() if line.strip()),
+                f"Instagram {media_kind.title()}"
+            )[:120]
+            new_items.append({
+                "id": f"instagram_{uuid.uuid4().hex[:16]}",
+                "title": title,
+                "category": "Instagram",
+                "type": media_kind,
+                "url": f"{MEDIA_URL_PREFIX}/{filename}",
+                "badge": "Instagram",
+                "description": caption[:500],
+                "colors": "",
+                "availability": "Available",
+                "price_label": "",
+                "featured": False,
+                "instagram_media_id": media_id,
+                "instagram_permalink": str(post.get("permalink", "")),
+                "instagram_timestamp": str(post.get("timestamp", ""))
+            })
+            imported_ids.add(media_id)
+
+        if new_items:
+            items = list(reversed(new_items)) + items
+            try:
+                with open(COLLECTION_FILE, "w", encoding="utf-8") as collection_file:
+                    json.dump(items, collection_file, indent=4, ensure_ascii=False)
+            except OSError as error:
+                for item in new_items:
+                    filename = item["url"].rsplit("/", 1)[-1]
+                    filepath = os.path.join(UPLOAD_DIR, filename)
+                    if os.path.exists(filepath):
+                        os.remove(filepath)
+                raise InstagramSyncError(f"Could not save imported Instagram media: {error}") from None
+
+            remember_category("Instagram")
+            for item in reversed(new_items):
+                append_history(
+                    "instagram import",
+                    item["title"],
+                    item["type"],
+                    "instagram",
+                    item["instagram_permalink"]
+                )
+
+        result = {
+            "status": "partial" if errors else "success",
+            "last_sync_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "imported": len(new_items),
+            "skipped": skipped,
+            "message": (
+                f"Imported {len(new_items)} Instagram item(s)."
+                if not errors else
+                f"Imported {len(new_items)} item(s); {len(errors)} media item(s) need attention."
+            ),
+            "errors": errors[:10]
+        }
+        save_instagram_sync_status(result)
+        if errors:
+            logger.warning("Instagram sync completed with %s media error(s).", len(errors))
+        return {**result, "configured": True}
+    except InstagramSyncError as error:
+        logger.error("Instagram sync failed: %s", error)
+        result = {
+            "status": "error",
+            "last_sync_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "imported": 0,
+            "skipped": 0,
+            "message": str(error),
+            "errors": []
+        }
+        save_instagram_sync_status(result)
+        return {**result, "configured": instagram_is_configured()}
+    except OSError as error:
+        logger.exception("Instagram sync could not access local storage.")
+        result = {
+            "status": "error",
+            "last_sync_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "imported": 0,
+            "skipped": 0,
+            "message": f"Could not access local storage: {error}",
+            "errors": []
+        }
+        save_instagram_sync_status(result)
+        return {**result, "configured": instagram_is_configured()}
+    finally:
+        INSTAGRAM_SYNC_LOCK.release()
+
+
+async def instagram_sync_loop():
+    while True:
+        result = await asyncio.to_thread(sync_instagram_media)
+        if result["status"] in {"error", "partial"}:
+            logger.warning("Instagram auto-sync status: %s", result["message"])
+        await asyncio.sleep(INSTAGRAM_SYNC_INTERVAL_SECONDS)
+
+
 def append_history(action: str, item_title: str = "", item_type: str = "", admin: str = "admin", details: str = ""):
     history = get_history()
     entry = {
@@ -349,10 +809,36 @@ async def serve_home(request: Request):
     return templates.TemplateResponse("index.html", {
         "request": request,
         "items": items,
+        "hero_item": get_hero_media(items),
         "logo_url": get_logo_url(),
         "design": get_design(),
-        "business": get_business()
+        "business": get_business(),
+        "site_url": get_public_site_url(request)
     })
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def robots_txt(request: Request):
+    site_url = get_public_site_url(request)
+    return (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin\n"
+        "Disallow: /api/\n"
+        f"Sitemap: {site_url}/sitemap.xml\n"
+    )
+
+
+@app.get("/sitemap.xml")
+async def sitemap_xml(request: Request):
+    namespace = "http://www.sitemaps.org/schemas/sitemap/0.9"
+    urlset = ET.Element("urlset", {"xmlns": namespace})
+    url = ET.SubElement(urlset, f"{{{namespace}}}url")
+    ET.SubElement(url, f"{{{namespace}}}loc").text = f"{get_public_site_url(request)}/"
+    return Response(
+        content=ET.tostring(urlset, encoding="utf-8", xml_declaration=True),
+        media_type="application/xml"
+    )
 
 
 @app.get("/health")
@@ -428,6 +914,7 @@ async def serve_admin(request: Request, error: str = ""):
     is_authenticated = is_admin_authenticated(request)
 
     items = get_collection() if is_authenticated else []
+    hero_media = get_hero_media(items) if is_authenticated else None
     inquiries = get_inquiries() if is_authenticated else []
     orders = get_orders() if is_authenticated else []
     history = get_history() if is_authenticated else []
@@ -439,6 +926,10 @@ async def serve_admin(request: Request, error: str = ""):
         "request": request,
         "is_authenticated": is_authenticated,
         "items": items,
+        "hero_images": [item for item in items if item.get("type") == "image"],
+        "hero_media": hero_media,
+        "hero_media_id": (hero_media or {}).get("id", ""),
+        "hero_updated": request.query_params.get("hero") == "updated",
         "inquiries": inquiries,
         "orders": orders,
         "history": history,
@@ -446,8 +937,81 @@ async def serve_admin(request: Request, error: str = ""):
         "design": design,
         "business": business,
         "categories": categories,
-        "error": error
+        "error": error,
+        "instagram_sync": get_instagram_sync_status() if is_authenticated else {}
     })
+
+
+@app.post("/api/admin/hero-media")
+async def admin_update_hero_media(request: Request, media_id: str = Form(...)):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    item = next(
+        (
+            entry for entry in get_collection()
+            if entry.get("id") == media_id and entry.get("type") == "image"
+        ),
+        None
+    )
+    if not item:
+        raise HTTPException(status_code=400, detail="Choose a photo from the active collection.")
+
+    save_hero_config({"media_id": media_id})
+
+    append_history("hero photo update", item.get("title", "Hero photo"), "image", "admin", media_id)
+    return RedirectResponse(url="/admin?hero=updated", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/api/admin/hero-media/upload")
+async def admin_upload_hero_media(request: Request, file: UploadFile = File(...)):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    extension = os.path.splitext(file.filename or "")[1].lower()
+    if extension not in {".jpg", ".jpeg", ".png", ".webp"}:
+        raise HTTPException(status_code=400, detail="Homepage photo must be JPG, PNG, or WEBP.")
+    if not (file.content_type or "").startswith("image/"):
+        raise HTTPException(status_code=400, detail="Choose a valid image file.")
+
+    signature = file.file.read(12)
+    file.file.seek(0)
+    valid_signature = (
+        (extension in {".jpg", ".jpeg"} and signature.startswith(b"\xff\xd8\xff"))
+        or (extension == ".png" and signature.startswith(b"\x89PNG\r\n\x1a\n"))
+        or (
+            extension == ".webp"
+            and signature.startswith(b"RIFF")
+            and signature[8:12] == b"WEBP"
+        )
+    )
+    if not valid_signature:
+        raise HTTPException(status_code=400, detail="The selected file does not match its image format.")
+
+    filename = f"hero_{uuid.uuid4().hex}{extension}"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    save_upload(file, filepath, MAX_IMAGE_BYTES, "Homepage photo")
+    hero_url = f"{MEDIA_URL_PREFIX}/{filename}"
+    try:
+        save_hero_config({"url": hero_url, "title": "Homepage Royal Photo"})
+    except HTTPException:
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        raise
+
+    append_history("hero photo upload", "Homepage Royal Photo", "image", "admin", hero_url)
+    return RedirectResponse(url="/admin?hero=updated", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/api/admin/instagram-sync")
+async def admin_sync_instagram(request: Request):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    await asyncio.to_thread(sync_instagram_media)
+    return RedirectResponse(
+        url="/admin",
+        status_code=status.HTTP_303_SEE_OTHER
+    )
 
 
 @app.post("/api/admin/orders/create")
@@ -666,6 +1230,7 @@ async def admin_upload_media(
     badge: str = Form("New Arrival"),
     description: str = Form(""),
     colors: str = Form(""),
+    occasions: str = Form(""),
     availability: str = Form("Available"),
     price_label: str = Form(""),
     featured: str = Form("false"),
@@ -682,6 +1247,8 @@ async def admin_upload_media(
     category = category.strip()
     if not category:
         raise HTTPException(status_code=400, detail="Category is required")
+    if len(occasions) > 160:
+        raise HTTPException(status_code=400, detail="Occasion tags must be 160 characters or fewer")
     remember_category(category)
 
     items = get_collection()
@@ -710,6 +1277,7 @@ async def admin_upload_media(
             "badge": badge,
             "description": description.strip(),
             "colors": colors.strip().lower(),
+            "occasions": occasions.strip() or "Wedding",
             "availability": availability.strip(),
             "price_label": price_label.strip(),
             "featured": featured == "true"
@@ -733,6 +1301,7 @@ async def admin_upload_media(
             "badge": badge,
             "description": description.strip(),
             "colors": colors.strip().lower(),
+            "occasions": occasions.strip() or "Wedding",
             "availability": availability.strip(),
             "price_label": price_label.strip(),
             "featured": featured == "true"
@@ -791,6 +1360,7 @@ async def admin_update_media(
     badge: str = Form("Royal Look"),
     description: str = Form(""),
     colors: str = Form(""),
+    occasions: str = Form(""),
     availability: str = Form("Available"),
     price_label: str = Form(""),
     featured: str = Form("false")
@@ -800,6 +1370,8 @@ async def admin_update_media(
     category = category.strip()
     if not category:
         raise HTTPException(status_code=400, detail="Category is required")
+    if len(occasions) > 160:
+        raise HTTPException(status_code=400, detail="Occasion tags must be 160 characters or fewer")
     remember_category(category)
 
     items = get_collection()
@@ -813,6 +1385,7 @@ async def admin_update_media(
         "badge": badge.strip(),
         "description": description.strip(),
         "colors": colors.strip().lower(),
+        "occasions": occasions.strip() or "Wedding",
         "availability": availability.strip(),
         "price_label": price_label.strip(),
         "featured": featured == "true"

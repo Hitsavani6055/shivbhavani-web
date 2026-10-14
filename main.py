@@ -71,10 +71,19 @@ app = FastAPI(
 RENDER_DISK_DIR = "/opt/render/project/src/persistent"
 configured_data_dir = os.getenv("PERSISTENT_DATA_DIR", "").strip()
 if configured_data_dir and not os.path.isdir(configured_data_dir):
-    raise RuntimeError(
-        f"PERSISTENT_DATA_DIR does not exist: {configured_data_dir}. "
-        "Verify the persistent disk is mounted before starting the app."
-    )
+    if os.path.isdir(RENDER_DISK_DIR):
+        logger.warning(
+            "PERSISTENT_DATA_DIR does not exist: %s. Using the mounted Render disk at %s.",
+            configured_data_dir,
+            RENDER_DISK_DIR
+        )
+        configured_data_dir = RENDER_DISK_DIR
+    else:
+        raise RuntimeError(
+            f"PERSISTENT_DATA_DIR does not exist: {configured_data_dir}, "
+            "and the Render disk is not mounted at "
+            f"{RENDER_DISK_DIR}. Verify the persistent disk before starting the app."
+        )
 if configured_data_dir and not os.access(configured_data_dir, os.W_OK):
     raise RuntimeError(
         f"PERSISTENT_DATA_DIR is not writable: {configured_data_dir}. "

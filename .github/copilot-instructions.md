@@ -18,7 +18,7 @@
 - Upload routes for `/static/uploads/{filename}` and `/media/{filename}` must stay ahead of their static mounts so video `Range` requests can return partial content for reel seeking.
 - Catalog reels retain native video controls plus a tap-to-play overlay. Keep the overlay synchronized with media `play`, `playing`, `pause`, and `error` events; call `video.play()` from the user's tap handler so mobile browsers receive a user gesture.
 - `render.yaml` mounts Render's persistent disk at `/opt/render/project/src/persistent`. Production catalog/settings/uploads are written there and survive ordinary code deploys; startup seeds bundled files only when the corresponding persistent file is absent, never over existing live data. Keep new data paths on this disk and do not copy local JSON over production JSON during deploys.
-- When `PERSISTENT_DATA_DIR` is explicitly configured, startup requires that directory to exist and be writable rather than silently creating an ephemeral replacement.
+- A configured `PERSISTENT_DATA_DIR` must exist; on Render only, an invalid override falls back to the mounted `/opt/render/project/src/persistent` disk when that mount exists. Startup still fails if no persistent disk is mounted, rather than silently using ephemeral storage.
 - Set `SITE_URL` to the public production origin so canonical metadata and `sitemap.xml` use the real domain; without it, those URLs use the incoming request host.
 - Instagram Graph API auto-import reads `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_ACCOUNT_ID`, and optional `INSTAGRAM_GRAPH_API_BASE_URL` from the environment; never check access tokens into the repository.
 

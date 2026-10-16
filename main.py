@@ -432,6 +432,98 @@ def get_collection():
         return DEFAULT_COLLECTION
 
 
+def homepage_upload_path(photo_url):
+    if not isinstance(photo_url, str):
+        return None
+    parsed_url = urlsplit(photo_url)
+    if parsed_url.scheme or parsed_url.netloc or parsed_url.query or parsed_url.fragment:
+        return None
+
+    for url_prefix, directory in (
+        (MEDIA_URL_PREFIX, UPLOAD_DIR),
+        ("/static/uploads", os.path.join("static", "uploads"))
+    ):
+        prefix = f"{url_prefix.rstrip('/')}/"
+        if not parsed_url.path.startswith(prefix):
+            continue
+        filename = unquote(parsed_url.path[len(prefix):])
+        if not filename or filename != os.path.basename(filename):
+            return None
+        base_dir = os.path.realpath(directory)
+        filepath = os.path.realpath(os.path.join(base_dir, filename))
+        if os.path.commonpath((base_dir, filepath)) != base_dir or not os.path.isfile(filepath):
+            return None
+        return filepath
+    return None
+
+
+def get_homepage_image_options(items):
+    image_extensions = {".jpg", ".jpeg", ".png", ".webp"}
+    options_by_filename = {}
+
+    def add_option(photo_url, title, category="Uploaded photo"):
+        photo_path = homepage_upload_path(photo_url)
+        if not photo_path:
+            return
+        filename = os.path.basename(photo_path)
+        extension = os.path.splitext(filename)[1].lower()
+        if extension not in image_extensions:
+            return
+        if extension == ".webp" and any(
+            os.path.isfile(os.path.splitext(photo_path)[0] + source_extension)
+            for source_extension in (".jpg", ".jpeg", ".png")
+        ):
+            return
+        options_by_filename.setdefault(filename, {
+            "url": photo_url,
+            "title": title,
+            "category": category
+        })
+
+    for item in items:
+        if item.get("type") != "image":
+            continue
+        item_title = str(item.get("title") or "Collection photo").strip()
+        item_category = str(item.get("category") or "Collection").strip()
+        gallery = item.get("images") if isinstance(item.get("images"), list) else []
+        item_images = [item.get("url")]
+        item_images.extend(
+            image.get("url") if isinstance(image, dict) else image
+            for image in gallery
+        )
+        seen_urls = set()
+        view_number = 0
+        for photo_url in item_images:
+            if not isinstance(photo_url, str) or photo_url in seen_urls:
+                continue
+            seen_urls.add(photo_url)
+            view_number += 1
+            title = item_title if view_number == 1 else f"{item_title} · photo {view_number}"
+            add_option(photo_url, title, item_category)
+
+    directories = [(UPLOAD_DIR, MEDIA_URL_PREFIX)]
+    static_uploads = os.path.join("static", "uploads")
+    if os.path.realpath(static_uploads) != os.path.realpath(UPLOAD_DIR):
+        directories.append((static_uploads, "/static/uploads"))
+
+    for directory, url_prefix in directories:
+        if not os.path.isdir(directory):
+            continue
+        with os.scandir(directory) as directory_entries:
+            for entry in sorted(directory_entries, key=lambda file_entry: file_entry.name.casefold()):
+                if not entry.is_file(follow_symlinks=False):
+                    continue
+                extension = os.path.splitext(entry.name)[1].lower()
+                if extension not in image_extensions:
+                    continue
+                photo_url = f"{url_prefix.rstrip('/')}/{entry.name}"
+                if entry.name not in options_by_filename:
+                    title = os.path.splitext(entry.name)[0].replace("_", " ").replace("-", " ").strip()
+                    add_option(photo_url, title.title() or "Uploaded photo")
+
+    return sorted(options_by_filename.values(), key=lambda option: option["title"].casefold())
+
+
 def get_configured_hero_media(
     items,
     config_path,
@@ -454,25 +546,14 @@ def get_configured_hero_media(
             if selected:
                 return selected
             configured_url = hero_config.get("url", "")
-            media_directories = (
-                (MEDIA_URL_PREFIX, UPLOAD_DIR),
-                ("/static/uploads", os.path.join("static", "uploads"))
-            )
-            for media_prefix, media_directory in media_directories:
-                prefix = f"{media_prefix.rstrip('/')}/"
-                if not isinstance(configured_url, str) or not configured_url.startswith(prefix):
-                    continue
-                filename = configured_url[len(prefix):]
-                if filename and os.path.basename(filename) == filename:
-                    filepath = os.path.join(media_directory, filename)
-                    if os.path.isfile(filepath):
-                        return {
-                            "id": "uploaded-hero",
-                            "title": hero_config.get("title", default_title),
-                            "category": "Homepage",
-                            "type": "image",
-                            "url": configured_url
-                        }
+            if homepage_upload_path(configured_url):
+                return {
+                    "id": "uploaded-hero",
+                    "title": hero_config.get("title", default_title),
+                    "category": "Homepage",
+                    "type": "image",
+                    "url": configured_url
+                }
             logger.warning("Configured hero photo is no longer available.")
         except (OSError, json.JSONDecodeError, ValueError, AttributeError):
             logger.exception("Could not read configured hero photo from %s.", config_path)
@@ -981,7 +1062,7 @@ async def serve_admin(request: Request, error: str = ""):
         "request": request,
         "is_authenticated": is_authenticated,
         "items": items,
-        "hero_images": [item for item in items if item.get("type") == "image"],
+        "hero_photo_options": get_homepage_image_options(items) if is_authenticated else [],
         "hero_media": hero_media,
         "hero_media_id": (hero_media or {}).get("id", ""),
         "hero_companion_media": hero_companion_media,
@@ -999,24 +1080,27 @@ async def serve_admin(request: Request, error: str = ""):
     })
 
 
-@app.post("/api/admin/hero-media")
-async def admin_update_hero_media(request: Request, media_id: str = Form(...)):
-    if not is_admin_authenticated(request):
-        raise HTTPException(status_code=403, detail="Unauthorized")
-
-    item = next(
+def select_homepage_photo(photo_url, config_path):
+    photo = next(
         (
-            entry for entry in get_collection()
-            if entry.get("id") == media_id and entry.get("type") == "image"
+            option for option in get_homepage_image_options(get_collection())
+            if option["url"] == photo_url
         ),
         None
     )
-    if not item:
-        raise HTTPException(status_code=400, detail="Choose a photo from the active collection.")
+    if not photo:
+        raise HTTPException(status_code=400, detail="Choose an available uploaded photo.")
+    save_hero_config({"url": photo["url"], "title": photo["title"]}, config_path)
+    return photo
 
-    save_hero_config({"media_id": media_id}, HERO_CONFIG_FILE)
 
-    append_history("hero photo update", item.get("title", "Hero photo"), "image", "admin", media_id)
+@app.post("/api/admin/hero-media")
+async def admin_update_hero_media(request: Request, photo_url: str = Form(...)):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    photo = select_homepage_photo(photo_url, HERO_CONFIG_FILE)
+    append_history("hero photo update", photo["title"], "image", "admin", photo_url)
     return RedirectResponse(url="/admin?hero=updated", status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -1068,27 +1152,17 @@ async def admin_upload_hero_media(request: Request, file: UploadFile = File(...)
 
 
 @app.post("/api/admin/hero-companion-media")
-async def admin_update_hero_companion_media(request: Request, media_id: str = Form(...)):
+async def admin_update_hero_companion_media(request: Request, photo_url: str = Form(...)):
     if not is_admin_authenticated(request):
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    item = next(
-        (
-            entry for entry in get_collection()
-            if entry.get("id") == media_id and entry.get("type") == "image"
-        ),
-        None
-    )
-    if not item:
-        raise HTTPException(status_code=400, detail="Choose a photo from the active collection.")
-
-    save_hero_config({"media_id": media_id}, HERO_COMPANION_CONFIG_FILE)
+    photo = select_homepage_photo(photo_url, HERO_COMPANION_CONFIG_FILE)
     append_history(
         "hero companion photo update",
-        item.get("title", "Hero companion photo"),
+        photo["title"],
         "image",
         "admin",
-        media_id
+        photo_url
     )
     return RedirectResponse(url="/admin?hero=updated", status_code=status.HTTP_303_SEE_OTHER)
 

@@ -257,7 +257,9 @@
                         <span id="heroPhotoTitle" class="flex items-center gap-2 font-bold text-sm text-stone-900">
                             <i class="fas fa-crown text-amber-600" aria-hidden="true"></i> Homepage Photos
                         </span>
-                        <span class="mt-1 block text-xs text-stone-500">Tap to change either photo</span>
+                        <span class="mt-1 block text-xs text-stone-500">
+                            Tap to change either photo · {{ hero_photo_options|length }} available
+                        </span>
                     </span>
                     <span class="flex shrink-0 items-center gap-2">
                         <img src="{{ main_image_url }}"
@@ -274,6 +276,11 @@
                     </span>
                 </summary>
                 <div class="mt-5 space-y-6 border-t border-stone-100 pt-5">
+                    {% if not hero_photo_options %}
+                    <p class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900" role="status">
+                        No uploaded photos are available yet. Upload a homepage photo below or add a photo in Add New Media.
+                    </p>
+                    {% endif %}
                     <div>
                         <h3 class="mb-3 text-sm font-bold text-stone-900">Main homepage photo</h3>
                         <div class="mb-4 grid gap-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:items-center">
@@ -435,55 +442,107 @@
 
         <!-- Left: Upload New Media -->
         <div class="space-y-6 flex flex-col lg:contents">
-            <div class="admin-card order-2 lg:order-2 lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border">
-                <h3 class="font-bold text-base text-stone-900 mb-4 pb-2 border-b flex items-center gap-2">
-                    <i class="fas fa-file-circle-plus text-amber-600"></i> Add New Order
-                </h3>
-                <form action="/api/admin/orders/create" method="POST" class="space-y-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input name="customer_name" required placeholder="Customer name" class="admin-input w-full border rounded-lg p-2 text-xs">
-                        <input name="phone" required placeholder="Phone number" class="admin-input w-full border rounded-lg p-2 text-xs">
-                    </div>
-                    <input name="branch" value="Bhavnagar (Main Branch)" placeholder="Branch" class="admin-input w-full border rounded-lg p-2 text-xs">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="date" name="event_date" class="admin-input w-full border rounded-lg p-2 text-xs">
-                        <select name="event_type" class="admin-input w-full border rounded-lg p-2 text-xs">
-                            {% for type in ['Wedding', 'Engagement', 'Reception', 'Groom Entry', 'Family Function', 'Other'] %}
-                            <option>{{ type }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="date" name="pickup_date" class="admin-input w-full border rounded-lg p-2 text-xs">
-                        <input type="date" name="return_date" class="admin-input w-full border rounded-lg p-2 text-xs">
-                    </div>
-                    <div id="orderProducts" class="space-y-2">
-                        <div class="order-product-row grid grid-cols-[1fr_58px_78px] gap-1">
-                            <select name="product_name" class="admin-input border rounded-lg p-2 text-xs">
-                                <option value="">Select product</option>
-                                {% for item in items %}<option value="{{ item.title }}">{{ item.title }}</option>{% endfor %}
-                            </select>
-                            <input type="number" name="quantity" min="1" value="1" class="admin-input border rounded-lg p-2 text-xs" title="Quantity">
-                            <input type="number" name="item_price" min="0" step="0.01" placeholder="Price" class="admin-input border rounded-lg p-2 text-xs">
-                        </div>
-                    </div>
-                    <button type="button" onclick="addOrderProductRow()" class="text-[11px] font-bold text-amber-700">+ Add another product</button>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="number" name="total_amount" min="0" step="0.01" placeholder="Total amount" class="admin-input border rounded-lg p-2 text-xs">
-                        <input type="number" name="advance_paid" min="0" step="0.01" placeholder="Advance paid" class="admin-input border rounded-lg p-2 text-xs">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="number" name="deposit_amount" min="0" step="0.01" placeholder="Security deposit" class="admin-input border rounded-lg p-2 text-xs">
-                        <select name="payment_status" class="admin-input border rounded-lg p-2 text-xs">
-                            <option>Unpaid</option><option>Partial</option><option>Paid</option><option>Refund pending</option><option>Refunded</option>
-                        </select>
-                    </div>
-                    <select name="payment_method" class="admin-input w-full border rounded-lg p-2 text-xs">
-                        <option>Cash</option><option>UPI</option><option>Bank transfer</option><option>Card</option><option>Other</option>
-                    </select>
-                    <textarea name="notes" rows="2" placeholder="Private admin notes" class="admin-input w-full border rounded-lg p-2 text-xs"></textarea>
-                    <button class="w-full bg-velvetWine hover:bg-softWine text-white font-bold py-2.5 rounded-lg text-xs transition shadow">Create Order</button>
-                </form>
+            <div class="admin-card order-2 lg:order-2 lg:col-span-3 bg-white p-5 sm:p-6 rounded-2xl shadow-sm border">
+                <details id="newOrderEditor" class="group">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600">
+                        <span>
+                            <span class="flex items-center gap-2 font-bold text-base text-stone-900">
+                                <i class="fas fa-file-circle-plus text-amber-600" aria-hidden="true"></i> Add New Order
+                            </span>
+                            <span class="mt-1 block text-xs text-stone-500">Enter customer, event, product and payment details</span>
+                        </span>
+                        <span class="flex shrink-0 items-center gap-2">
+                            <span class="rounded-full bg-velvetWine px-3 py-1.5 text-[10px] font-bold text-white">Open form</span>
+                            <i class="fas fa-chevron-down text-xs text-stone-500 transition-transform group-open:rotate-180"
+                                aria-hidden="true"></i>
+                        </span>
+                    </summary>
+                    <form action="/api/admin/orders/create" method="POST" class="mt-5 space-y-5 border-t border-stone-100 pt-5">
+                        <fieldset class="space-y-3">
+                            <legend class="mb-2 text-xs font-bold uppercase tracking-wide text-stone-600">Customer details</legend>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="block text-xs font-semibold text-stone-700">Customer name *
+                                    <input name="customer_name" required autocomplete="name" placeholder="Enter full name" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                </label>
+                                <label class="block text-xs font-semibold text-stone-700">Phone number *
+                                    <input type="tel" name="phone" required autocomplete="tel" inputmode="tel" placeholder="10-digit phone number" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                </label>
+                            </div>
+                            <label class="block text-xs font-semibold text-stone-700">Branch
+                                <input name="branch" value="Bhavnagar (Main Branch)" placeholder="Branch or showroom" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                            </label>
+                        </fieldset>
+                        <fieldset class="space-y-3 border-t border-stone-100 pt-4">
+                            <legend class="mb-2 text-xs font-bold uppercase tracking-wide text-stone-600">Event and rental dates</legend>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="block text-xs font-semibold text-stone-700">Event date
+                                    <input type="date" name="event_date" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                </label>
+                                <label class="block text-xs font-semibold text-stone-700">Event type
+                                    <select name="event_type" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                        {% for type in ['Wedding', 'Engagement', 'Reception', 'Groom Entry', 'Family Function', 'Other'] %}
+                                        <option>{{ type }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                                <label class="block text-xs font-semibold text-stone-700">Pickup date
+                                    <input type="date" name="pickup_date" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                </label>
+                                <label class="block text-xs font-semibold text-stone-700">Return date
+                                    <input type="date" name="return_date" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                </label>
+                            </div>
+                        </fieldset>
+                        <fieldset class="space-y-3 border-t border-stone-100 pt-4">
+                            <legend class="mb-2 text-xs font-bold uppercase tracking-wide text-stone-600">Products or services</legend>
+                            <datalist id="orderProductOptions">
+                                {% for item in items %}<option value="{{ item.title }}"></option>{% endfor %}
+                            </datalist>
+                            <div id="orderProducts" class="space-y-2">
+                                <div class="order-product-row grid grid-cols-[minmax(0,1fr)_64px_92px] gap-2">
+                                    <label class="block min-w-0 text-[10px] font-semibold text-stone-600">Product / service *
+                                        <input name="product_name" list="orderProductOptions" required placeholder="Choose or type a product" class="admin-input mt-1 w-full min-w-0 border rounded-lg p-2 text-xs">
+                                    </label>
+                                    <label class="block text-[10px] font-semibold text-stone-600">Qty
+                                        <input type="number" name="quantity" min="1" value="1" class="admin-input mt-1 w-full border rounded-lg p-2 text-xs" title="Quantity">
+                                    </label>
+                                    <label class="block text-[10px] font-semibold text-stone-600">Item price
+                                        <input type="number" name="item_price" min="0" step="0.01" placeholder="₹" class="admin-input mt-1 w-full border rounded-lg p-2 text-xs">
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="button" onclick="addOrderProductRow()" class="text-[11px] font-bold text-amber-700">+ Add another product</button>
+                        </fieldset>
+                        <fieldset class="space-y-3 border-t border-stone-100 pt-4">
+                            <legend class="mb-2 text-xs font-bold uppercase tracking-wide text-stone-600">Payment details</legend>
+                            <div class="grid gap-3 sm:grid-cols-2">
+                                <label class="block text-xs font-semibold text-stone-700">Total amount (₹)
+                                    <input type="number" name="total_amount" min="0" step="0.01" placeholder="0.00" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                </label>
+                                <label class="block text-xs font-semibold text-stone-700">Advance paid (₹)
+                                    <input type="number" name="advance_paid" min="0" step="0.01" placeholder="0.00" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                </label>
+                                <label class="block text-xs font-semibold text-stone-700">Security deposit (₹)
+                                    <input type="number" name="deposit_amount" min="0" step="0.01" placeholder="0.00" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                </label>
+                                <label class="block text-xs font-semibold text-stone-700">Payment status
+                                    <select name="payment_status" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                        <option>Unpaid</option><option>Partial</option><option>Paid</option><option>Refund pending</option><option>Refunded</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <label class="block text-xs font-semibold text-stone-700">Payment method
+                                <select name="payment_method" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                    <option>Cash</option><option>UPI</option><option>Bank transfer</option><option>Card</option><option>Other</option>
+                                </select>
+                            </label>
+                        </fieldset>
+                        <label class="block border-t border-stone-100 pt-4 text-xs font-semibold text-stone-700">Private admin notes
+                            <textarea name="notes" rows="2" placeholder="Optional details for staff" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs"></textarea>
+                        </label>
+                        <button class="w-full bg-velvetWine hover:bg-softWine text-white font-bold py-3 rounded-lg text-xs transition shadow">Create Order</button>
+                    </form>
+                </details>
             </div>
 
             <div class="admin-card order-1 lg:order-1 lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border">
@@ -952,7 +1011,6 @@
         row.querySelectorAll('input').forEach(input => {
             input.value = input.name === 'quantity' ? '1' : '';
         });
-        row.querySelector('select').selectedIndex = 0;
         container.appendChild(row);
     }
 

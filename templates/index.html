@@ -51,10 +51,11 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script>
-        tailwind.config = {
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
@@ -1927,8 +1928,8 @@
                             <div class="slider-track">
                                 {% for image in item.images %}
                             {% set image_url = image.url if image is mapping else image %}
-                            <img src="{{ image_url }}"
-                                {% if image_url|webp_url %}srcset="{{ image_url|webp_url }} 1x"{% endif %}
+                            <img {% if loop.first %}src="{{ image_url }}"{% else %}data-lazy-src="{{ image_url }}"{% endif %}
+                            {% if image_url|webp_url %}data-webp-src="{{ image_url|webp_url }}"{% if loop.first %} srcset="{{ image_url|webp_url }} 1x"{% endif %}{% endif %}
                                 class="slider-img w-full h-80" alt="{{ item.title }} - view {{ loop.index }}"
                                 loading="lazy" decoding="async">
                                 {% endfor %}
@@ -2425,16 +2426,19 @@
             document.documentElement.style.setProperty('--scroll-depth', `${window.scrollY}px`);
         }, { passive: true });
 
+        let introDismissTimer;
+        const introReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        introDismissTimer = window.setTimeout(
+            () => dismissIntro(false),
+            introReducedMotion ? 900 : 3600
+        );
+
         window.addEventListener('load', () => {
             if (window.location.hash) {
                 history.replaceState(null, document.title, window.location.pathname + window.location.search);
                 window.scrollTo(0, 0);
             }
-            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            introDismissTimer = window.setTimeout(() => dismissIntro(false), reducedMotion ? 900 : 4200);
         });
-
-        let introDismissTimer;
 
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape' && document.getElementById('splashScreen')?.dataset.dismissed !== 'true') {
@@ -2994,6 +2998,14 @@
 
             let index = parseInt(slider.dataset.index || '0');
             index = (index + dir + slides.length) % slides.length;
+            const selectedSlide = slides[index];
+            if (selectedSlide.dataset.lazySrc) {
+                if (selectedSlide.dataset.webpSrc) {
+                    selectedSlide.srcset = `${selectedSlide.dataset.webpSrc} 1x`;
+                }
+                selectedSlide.src = selectedSlide.dataset.lazySrc;
+                delete selectedSlide.dataset.lazySrc;
+            }
             slider.dataset.index = index;
             track.style.transform = 'translateX(-' + (index * 100) + '%)';
 

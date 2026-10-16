@@ -14,8 +14,12 @@
         :root {
             --admin-wine: #5b0e1e;
             --admin-wine-dark: #3d0914;
-            --admin-gold: #c5a059;
-            --admin-ivory: #fbf8f1;
+            --admin-gold: #d8b66a;
+            --admin-charcoal: #171315;
+            --admin-surface: #241c1f;
+            --admin-surface-raised: #302528;
+            --admin-text: #f5eee7;
+            --admin-muted: #c9b9b1;
         }
         html, body {
             width: 100%;
@@ -27,20 +31,46 @@
         }
         .admin-shell {
             background:
-                radial-gradient(circle at 8% 0%, rgba(197, 160, 89, .16), transparent 28%),
-                linear-gradient(135deg, var(--admin-ivory), #f4ede2);
+                radial-gradient(circle at 8% 0%, rgba(216, 182, 106, .11), transparent 30%),
+                radial-gradient(circle at 100% 28%, rgba(91, 14, 30, .2), transparent 34%),
+                linear-gradient(135deg, #211a1d, var(--admin-charcoal) 72%);
+            color: var(--admin-text);
         }
         .admin-card {
-            border-color: rgba(197, 160, 89, .34);
-            background-color: #fffdf9;
-            box-shadow: 0 14px 35px rgba(84, 18, 30, .07);
+            border-color: rgba(216, 182, 106, .27);
+            background-color: var(--admin-surface) !important;
+            box-shadow: 0 14px 35px rgba(0, 0, 0, .24);
         }
         .admin-card h3 {
             letter-spacing: .015em;
         }
+        .admin-card [class~="bg-white"],
+        .admin-card [class~="bg-stone-50"],
+        .admin-card [class~="bg-stone-100"] {
+            background-color: var(--admin-surface-raised) !important;
+        }
+        .admin-card [class~="text-stone-900"] { color: var(--admin-text) !important; }
+        .admin-card [class~="text-stone-800"] { color: #eee2da !important; }
+        .admin-card [class~="text-stone-700"] { color: #e2d2ca !important; }
+        .admin-card [class~="text-stone-600"] { color: #d4c2b9 !important; }
+        .admin-card [class~="text-stone-500"] { color: var(--admin-muted) !important; }
+        .admin-card [class~="text-stone-400"] { color: #ad9990 !important; }
+        .admin-card [class~="text-velvetWine"] { color: var(--admin-gold) !important; }
+        .admin-card [class~="border-stone-100"],
+        .admin-card [class~="border-stone-200"] {
+            border-color: rgba(216, 182, 106, .2) !important;
+        }
         .admin-input {
             border-color: #e7ded2;
             background: #fffdfa;
+            color: #211a1d;
+        }
+        .admin-input::placeholder {
+            color: #766b65;
+        }
+        .admin-input option {
+            background: #fffdfa;
+            color: #211a1d;
         }
         .admin-input:focus {
             border-color: var(--admin-gold);
@@ -89,13 +119,16 @@
             outline-offset: 2px;
         }
         .admin-login {
-            border: 1px solid rgba(197, 160, 89, .3);
-            background-color: #fffdf9;
-            box-shadow: 0 22px 55px rgba(61, 9, 20, .1);
+            border: 1px solid rgba(216, 182, 106, .3);
+            background-color: var(--admin-surface);
+            color: var(--admin-text);
+            box-shadow: 0 22px 55px rgba(0, 0, 0, .3);
         }
         .admin-login .fa-lock {
             color: var(--admin-gold) !important;
         }
+        .admin-login h2 { color: var(--admin-text); }
+        .admin-login p { color: var(--admin-muted); }
         .admin-section-title {
             letter-spacing: .02em;
         }

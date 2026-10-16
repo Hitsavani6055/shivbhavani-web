@@ -17,8 +17,8 @@
 - Uploads and JSON data use `PERSISTENT_DATA_DIR` when configured. Without it, uploads go to `static/uploads` and data files stay at the project root. Persistent uploads are served under `/media`; bundled static assets use `/static`.
 - Upload routes for `/static/uploads/{filename}` and `/media/{filename}` must stay ahead of their static mounts so video `Range` requests can return partial content for reel seeking.
 - Catalog reels retain native video controls plus a tap-to-play overlay. Keep the overlay synchronized with media `play`, `playing`, `pause`, and `error` events; call `video.play()` from the user's tap handler so mobile browsers receive a user gesture.
-- Render's current free-tier configuration explicitly enables ephemeral storage with `ALLOW_EPHEMERAL_STORAGE`; uploaded media and JSON-backed catalog/settings may be lost when the instance restarts or redeploys. Never deploy local JSON or uploads to overwrite production data.
-- When a Render disk is attached, mount it at `/opt/render/project/src/persistent`; an invalid `PERSISTENT_DATA_DIR` falls back to this mount if available. Without a disk, ephemeral fallback is allowed only when `ALLOW_EPHEMERAL_STORAGE` is explicitly enabled.
+- Render's current configuration has no persistent disk; when no disk is mounted, an invalid `PERSISTENT_DATA_DIR` logs a warning and falls back to ephemeral storage. Uploaded media and JSON-backed catalog/settings may be lost when the instance restarts or redeploys. Never deploy local JSON or uploads to overwrite production data.
+- When a Render disk is attached, mount it at `/opt/render/project/src/persistent`; an invalid `PERSISTENT_DATA_DIR` falls back to this mount if available.
 - Set `SITE_URL` to the public production origin so canonical metadata and `sitemap.xml` use the real domain; without it, those URLs use the incoming request host.
 - Instagram Graph API auto-import reads `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_ACCOUNT_ID`, and optional `INSTAGRAM_GRAPH_API_BASE_URL` from the environment; never check access tokens into the repository.
 

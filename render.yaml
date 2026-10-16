@@ -14,8 +14,6 @@ services:
         value: 919925245246
       - key: INSTAGRAM_HANDLE
         value: shivbhavani_safa_bhavnagar
-      - key: ALLOW_EPHEMERAL_STORAGE
-        value: "true"
       - key: SITE_URL
         sync: false
       - key: INSTAGRAM_ACCESS_TOKEN

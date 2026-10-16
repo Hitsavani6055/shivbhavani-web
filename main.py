@@ -70,9 +70,6 @@ app = FastAPI(
 
 RENDER_DISK_DIR = "/opt/render/project/src/persistent"
 configured_data_dir = os.getenv("PERSISTENT_DATA_DIR", "").strip()
-allow_ephemeral_storage = os.getenv("ALLOW_EPHEMERAL_STORAGE", "").strip().lower() in {
-    "1", "true", "yes"
-}
 if configured_data_dir and not os.path.isdir(configured_data_dir):
     if os.path.isdir(RENDER_DISK_DIR):
         logger.warning(
@@ -81,18 +78,14 @@ if configured_data_dir and not os.path.isdir(configured_data_dir):
             RENDER_DISK_DIR
         )
         configured_data_dir = RENDER_DISK_DIR
-    elif allow_ephemeral_storage:
+    else:
         logger.warning(
-            "PERSISTENT_DATA_DIR does not exist: %s. Ephemeral storage is explicitly enabled.",
+            "PERSISTENT_DATA_DIR does not exist: %s, and no Render disk is mounted. "
+            "Continuing with ephemeral storage; uploaded media and JSON data will not "
+            "survive an instance restart or redeploy.",
             configured_data_dir
         )
         configured_data_dir = ""
-    else:
-        raise RuntimeError(
-            f"PERSISTENT_DATA_DIR does not exist: {configured_data_dir}, "
-            "and the Render disk is not mounted at "
-            f"{RENDER_DISK_DIR}. Verify the persistent disk before starting the app."
-        )
 if configured_data_dir and not os.access(configured_data_dir, os.W_OK):
     raise RuntimeError(
         f"PERSISTENT_DATA_DIR is not writable: {configured_data_dir}. "

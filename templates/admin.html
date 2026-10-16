@@ -243,13 +243,13 @@
     {% else %}
     <!-- Admin Management Dashboard -->
     <div class="admin-dashboard max-w-6xl mx-auto py-8 px-4 grid lg:grid-cols-3 gap-8">
-        <section class="admin-card lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border"
+        <section class="admin-card order-last lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border"
             aria-labelledby="heroPhotoTitle">
             <h2 id="heroPhotoTitle" class="font-bold text-base text-stone-900 mb-2 flex items-center gap-2">
-                <i class="fas fa-crown text-amber-600"></i> Homepage Royal Photo
+                <i class="fas fa-crown text-amber-600"></i> Homepage Photos
             </h2>
             <p class="text-xs text-stone-600 mb-4">
-                Upload a photo to use only in the homepage hero, or choose an image already in your collection.
+                Change either homepage hero photo without changing your collection.
             </p>
             {% if hero_updated %}
             <p class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800"
@@ -268,6 +268,75 @@
                         {{ hero_media.title if hero_media else "Brand logo (no homepage photo selected)" }}
                     </p>
                 </div>
+            </div>
+            <div class="mt-6 border-t border-stone-100 pt-5">
+                <h3 class="font-bold text-sm text-stone-900 mb-2">Second overlapping photo</h3>
+                <div class="mb-5 grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center">
+                    {% set companion_image_url = hero_companion_media.url if hero_companion_media else '/static/uploads/hero_companion_navy.jpg' %}
+                    <img src="{{ companion_image_url }}"
+                        {% if companion_image_url|webp_url %}srcset="{{ companion_image_url|webp_url }} 1x"{% endif %}
+                        alt="Current homepage second photo"
+                        loading="lazy" decoding="async"
+                        class="h-32 w-full rounded-xl border border-amber-200 bg-stone-100 object-contain">
+                    <div>
+                        <p class="text-xs font-semibold text-stone-800">Current second homepage photo</p>
+                        <p class="mt-1 text-xs text-stone-500">
+                            {{ hero_companion_media.title if hero_companion_media else "Default companion photo" }}
+                        </p>
+                    </div>
+                </div>
+                {% if hero_images %}
+                <form action="/api/admin/hero-companion-media" method="POST"
+                    class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px_auto] sm:items-end">
+                    <label class="block text-xs font-semibold">
+                        Choose second photo from collection
+                        <select name="media_id" id="heroCompanionMediaSelect" required
+                            class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                            {% if hero_companion_media_id in ["uploaded-hero", "default-hero-companion"] %}
+                            <option value="" selected disabled>
+                                {% if hero_companion_media_id == "uploaded-hero" %}
+                                Homepage-only photo is active — choose a collection photo to switch
+                                {% else %}
+                                Default companion photo is active — choose a collection photo to switch
+                                {% endif %}
+                            </option>
+                            {% endif %}
+                            {% for image in hero_images %}
+                            <option value="{{ image.id }}" data-image-url="{{ image.url }}"
+                                {% if image.id == hero_companion_media_id %}selected{% endif %}>
+                                {{ image.title }} · {{ image.category }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <img id="heroCompanionMediaPreview"
+                        src="{{ companion_image_url }}"
+                        {% if companion_image_url|webp_url %}srcset="{{ companion_image_url|webp_url }} 1x"{% endif %}
+                        alt="Selected second homepage photo preview"
+                        loading="lazy" decoding="async"
+                        class="h-28 w-full rounded-xl border border-amber-200 bg-stone-100 object-contain">
+                    <button type="submit"
+                        class="rounded-lg bg-stone-900 px-5 py-2.5 text-xs font-bold text-amber-300 transition hover:bg-black">
+                        Save Second Photo
+                    </button>
+                </form>
+                {% endif %}
+                <form action="/api/admin/hero-companion-media/upload" method="POST" enctype="multipart/form-data"
+                    class="mt-5 grid gap-3 border-t border-stone-100 pt-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                    <label class="block text-xs font-semibold text-stone-800">
+                        Upload a new second homepage photo
+                        <input type="file" name="file" accept="image/jpeg,image/png,image/webp" required
+                            class="admin-input mt-1 w-full rounded-lg border p-2.5 text-xs"
+                            aria-describedby="heroCompanionUploadHelp">
+                        <span id="heroCompanionUploadHelp" class="mt-1 block font-normal text-stone-500">
+                            JPG, PNG, or WEBP · up to 30 MB · this photo stays separate from collection items
+                        </span>
+                    </label>
+                    <button type="submit"
+                        class="rounded-lg bg-velvetWine px-5 py-2.5 text-xs font-bold text-white transition hover:bg-black">
+                        Upload and Use Second Photo
+                    </button>
+                </form>
             </div>
             {% if hero_images %}
             <form action="/api/admin/hero-media" method="POST"
@@ -902,12 +971,20 @@
     const singleMediaPreview = document.getElementById('singleMediaPreview');
     const heroMediaSelect = document.getElementById('heroMediaSelect');
     const heroMediaPreview = document.getElementById('heroMediaPreview');
-    heroMediaSelect?.addEventListener('change', () => {
-        const selectedOption = heroMediaSelect.selectedOptions[0];
-        if (selectedOption && heroMediaPreview) {
-            heroMediaPreview.src = selectedOption.dataset.imageUrl || '';
-            heroMediaPreview.alt = `Preview: ${selectedOption.textContent.trim()}`;
-        }
+    const heroCompanionMediaSelect = document.getElementById('heroCompanionMediaSelect');
+    const heroCompanionMediaPreview = document.getElementById('heroCompanionMediaPreview');
+    [
+        [heroMediaSelect, heroMediaPreview],
+        [heroCompanionMediaSelect, heroCompanionMediaPreview]
+    ].forEach(([select, preview]) => {
+        select?.addEventListener('change', () => {
+            const selectedOption = select.selectedOptions[0];
+            if (selectedOption && preview) {
+                preview.src = selectedOption.dataset.imageUrl || '';
+                preview.removeAttribute('srcset');
+                preview.alt = `Preview: ${selectedOption.textContent.trim()}`;
+            }
+        });
     });
 
     function showUploadPreviews(input, preview) {

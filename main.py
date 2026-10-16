@@ -308,6 +308,7 @@ DESIGN_FILE = persistent_file("design.json")
 BUSINESS_FILE = persistent_file("business.json")
 CATEGORY_FILE = persistent_file("categories.json")
 HERO_CONFIG_FILE = persistent_file("hero_config.json")
+HERO_COMPANION_CONFIG_FILE = persistent_file("hero_companion_config.json")
 INSTAGRAM_SYNC_FILE = persistent_file("instagram_sync.json")
 DEFAULT_LOGO_URL = "/static/logo.svg"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "S@vani6055")
@@ -431,12 +432,20 @@ def get_collection():
         return DEFAULT_COLLECTION
 
 
-def get_hero_media(items):
+def get_configured_hero_media(
+    items,
+    config_path,
+    default_title,
+    default_url="",
+    fallback_terms=()
+):
     image_items = [item for item in items if item.get("type") == "image"]
-    if os.path.exists(HERO_CONFIG_FILE):
+    if os.path.exists(config_path):
         try:
-            with open(HERO_CONFIG_FILE, "r", encoding="utf-8") as config_file:
+            with open(config_path, "r", encoding="utf-8") as config_file:
                 hero_config = json.load(config_file)
+            if not isinstance(hero_config, dict):
+                raise ValueError("Homepage photo config must be a JSON object.")
             selected_id = hero_config.get("media_id", "")
             selected = next(
                 (item for item in image_items if item.get("id") == selected_id),
@@ -445,46 +454,77 @@ def get_hero_media(items):
             if selected:
                 return selected
             configured_url = hero_config.get("url", "")
-            media_prefix = f"{MEDIA_URL_PREFIX}/"
-            if isinstance(configured_url, str) and configured_url.startswith(media_prefix):
-                filename = configured_url[len(media_prefix):]
+            media_directories = (
+                (MEDIA_URL_PREFIX, UPLOAD_DIR),
+                ("/static/uploads", os.path.join("static", "uploads"))
+            )
+            for media_prefix, media_directory in media_directories:
+                prefix = f"{media_prefix.rstrip('/')}/"
+                if not isinstance(configured_url, str) or not configured_url.startswith(prefix):
+                    continue
+                filename = configured_url[len(prefix):]
                 if filename and os.path.basename(filename) == filename:
-                    filepath = os.path.join(UPLOAD_DIR, filename)
+                    filepath = os.path.join(media_directory, filename)
                     if os.path.isfile(filepath):
                         return {
                             "id": "uploaded-hero",
-                            "title": hero_config.get("title", "Homepage Royal Photo"),
+                            "title": hero_config.get("title", default_title),
                             "category": "Homepage",
                             "type": "image",
                             "url": configured_url
                         }
             logger.warning("Configured hero photo is no longer available.")
-        except (OSError, json.JSONDecodeError, AttributeError):
-            logger.exception("Could not read configured hero photo.")
-    if not image_items:
+        except (OSError, json.JSONDecodeError, ValueError, AttributeError):
+            logger.exception("Could not read configured hero photo from %s.", config_path)
+    if default_url:
+        default_path = os.path.join("static", default_url.removeprefix("/static/"))
+        if os.path.isfile(default_path):
+            return {
+                "id": "default-hero-companion",
+                "title": default_title,
+                "category": "Homepage",
+                "type": "image",
+                "url": default_url
+            }
+    if not fallback_terms:
         return None
-    royal_headwear = ("paghdi", "pagdi", "safa", "turban")
     matching_item = next(
         (
             item for item in image_items
             if any(
                 term in f"{item.get('title', '')} {item.get('category', '')}".casefold()
-                for term in royal_headwear
+                for term in fallback_terms
             )
         ),
         None
     )
-    if matching_item:
-        return matching_item
-    return None
+    return matching_item
 
 
-def save_hero_config(config):
-    temporary_path = f"{HERO_CONFIG_FILE}.{uuid.uuid4().hex}.tmp"
+def get_hero_media(items):
+    return get_configured_hero_media(
+        items,
+        HERO_CONFIG_FILE,
+        "Homepage Royal Photo",
+        fallback_terms=("paghdi", "pagdi", "safa", "turban")
+    )
+
+
+def get_hero_companion_media(items):
+    return get_configured_hero_media(
+        items,
+        HERO_COMPANION_CONFIG_FILE,
+        "Homepage Companion Photo",
+        default_url="/static/uploads/hero_companion_navy.jpg"
+    )
+
+
+def save_hero_config(config, config_path=HERO_CONFIG_FILE):
+    temporary_path = f"{config_path}.{uuid.uuid4().hex}.tmp"
     try:
         with open(temporary_path, "w", encoding="utf-8") as config_file:
             json.dump(config, config_file, indent=4, ensure_ascii=False)
-        os.replace(temporary_path, HERO_CONFIG_FILE)
+        os.replace(temporary_path, config_path)
     except OSError as error:
         if os.path.exists(temporary_path):
             os.remove(temporary_path)
@@ -823,6 +863,7 @@ async def serve_home(request: Request):
         "request": request,
         "items": items,
         "hero_item": get_hero_media(items),
+        "hero_companion_media": get_hero_companion_media(items),
         "logo_url": get_logo_url(),
         "design": get_design(),
         "business": get_business(),
@@ -928,6 +969,7 @@ async def serve_admin(request: Request, error: str = ""):
 
     items = get_collection() if is_authenticated else []
     hero_media = get_hero_media(items) if is_authenticated else None
+    hero_companion_media = get_hero_companion_media(items) if is_authenticated else None
     inquiries = get_inquiries() if is_authenticated else []
     orders = get_orders() if is_authenticated else []
     history = get_history() if is_authenticated else []
@@ -942,6 +984,8 @@ async def serve_admin(request: Request, error: str = ""):
         "hero_images": [item for item in items if item.get("type") == "image"],
         "hero_media": hero_media,
         "hero_media_id": (hero_media or {}).get("id", ""),
+        "hero_companion_media": hero_companion_media,
+        "hero_companion_media_id": (hero_companion_media or {}).get("id", ""),
         "hero_updated": request.query_params.get("hero") == "updated",
         "inquiries": inquiries,
         "orders": orders,
@@ -970,17 +1014,13 @@ async def admin_update_hero_media(request: Request, media_id: str = Form(...)):
     if not item:
         raise HTTPException(status_code=400, detail="Choose a photo from the active collection.")
 
-    save_hero_config({"media_id": media_id})
+    save_hero_config({"media_id": media_id}, HERO_CONFIG_FILE)
 
     append_history("hero photo update", item.get("title", "Hero photo"), "image", "admin", media_id)
     return RedirectResponse(url="/admin?hero=updated", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@app.post("/api/admin/hero-media/upload")
-async def admin_upload_hero_media(request: Request, file: UploadFile = File(...)):
-    if not is_admin_authenticated(request):
-        raise HTTPException(status_code=403, detail="Unauthorized")
-
+def save_homepage_photo_upload(file: UploadFile, config_path, title, filename_prefix):
     extension = os.path.splitext(file.filename or "")[1].lower()
     if extension not in {".jpg", ".jpeg", ".png", ".webp"}:
         raise HTTPException(status_code=400, detail="Homepage photo must be JPG, PNG, or WEBP.")
@@ -1001,18 +1041,76 @@ async def admin_upload_hero_media(request: Request, file: UploadFile = File(...)
     if not valid_signature:
         raise HTTPException(status_code=400, detail="The selected file does not match its image format.")
 
-    filename = f"hero_{uuid.uuid4().hex}{extension}"
+    filename = f"{filename_prefix}_{uuid.uuid4().hex}{extension}"
     filepath = os.path.join(UPLOAD_DIR, filename)
     save_upload(file, filepath, MAX_IMAGE_BYTES, "Homepage photo")
     hero_url = f"{MEDIA_URL_PREFIX}/{filename}"
     try:
-        save_hero_config({"url": hero_url, "title": "Homepage Royal Photo"})
+        save_hero_config({"url": hero_url, "title": title}, config_path)
     except HTTPException:
-        if os.path.exists(filepath):
-            os.remove(filepath)
+        for failed_path in (filepath, os.path.splitext(filepath)[0] + ".webp"):
+            if os.path.exists(failed_path):
+                os.remove(failed_path)
         raise
+    return hero_url
 
+
+@app.post("/api/admin/hero-media/upload")
+async def admin_upload_hero_media(request: Request, file: UploadFile = File(...)):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    hero_url = save_homepage_photo_upload(
+        file, HERO_CONFIG_FILE, "Homepage Royal Photo", "hero"
+    )
     append_history("hero photo upload", "Homepage Royal Photo", "image", "admin", hero_url)
+    return RedirectResponse(url="/admin?hero=updated", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/api/admin/hero-companion-media")
+async def admin_update_hero_companion_media(request: Request, media_id: str = Form(...)):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    item = next(
+        (
+            entry for entry in get_collection()
+            if entry.get("id") == media_id and entry.get("type") == "image"
+        ),
+        None
+    )
+    if not item:
+        raise HTTPException(status_code=400, detail="Choose a photo from the active collection.")
+
+    save_hero_config({"media_id": media_id}, HERO_COMPANION_CONFIG_FILE)
+    append_history(
+        "hero companion photo update",
+        item.get("title", "Hero companion photo"),
+        "image",
+        "admin",
+        media_id
+    )
+    return RedirectResponse(url="/admin?hero=updated", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/api/admin/hero-companion-media/upload")
+async def admin_upload_hero_companion_media(request: Request, file: UploadFile = File(...)):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    hero_url = save_homepage_photo_upload(
+        file,
+        HERO_COMPANION_CONFIG_FILE,
+        "Homepage Companion Photo",
+        "hero_companion"
+    )
+    append_history(
+        "hero companion photo upload",
+        "Homepage Companion Photo",
+        "image",
+        "admin",
+        hero_url
+    )
     return RedirectResponse(url="/admin?hero=updated", status_code=status.HTTP_303_SEE_OTHER)
 
 

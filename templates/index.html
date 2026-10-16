@@ -1783,8 +1783,9 @@
             <div class="hero-visual{% if not hero_item %} hero-visual--brand{% endif %}" data-hero-visual>
                 <div class="hero-visual-halo" aria-hidden="true"></div>
                 <div class="hero-companion-photo">
-                    <img src="/static/uploads/hero_companion_navy.jpg"
-                        srcset="/static/uploads/hero_companion_navy.webp 1x"
+                    {% set companion_image_url = hero_companion_media.url if hero_companion_media else '/static/uploads/hero_companion_navy.jpg' %}
+                    <img src="{{ companion_image_url }}"
+                        {% if companion_image_url|webp_url %}srcset="{{ companion_image_url|webp_url }} 1x"{% endif %}
                         alt="Navy royal sherwani, safa and accessories from Shivbhavani"
                         loading="lazy" fetchpriority="low" decoding="async">
                 </div>

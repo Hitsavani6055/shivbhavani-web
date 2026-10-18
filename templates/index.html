@@ -1048,6 +1048,72 @@
             transform: translateY(0) scale(1);
         }
 
+        .modal-badges {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: .5rem;
+            margin-bottom: .75rem;
+        }
+
+        #modalCategory,
+        #modalBadge {
+            display: inline-flex;
+            max-width: 100%;
+            align-items: center;
+            border: 1px solid transparent;
+            border-radius: 9999px;
+            padding: .35rem .7rem;
+            font-size: .68rem;
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: .045em;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            box-shadow: 0 2px 6px rgba(38, 22, 18, .12);
+        }
+
+        #modalCategory {
+            border-color: #5b0e1e;
+            background: #5b0e1e;
+            color: #fffaf0;
+        }
+
+        #modalBadge {
+            border-color: #9a752b;
+            background: #f3dfaa;
+            color: #3d0914;
+        }
+
+        .modal-meta-tag {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid;
+            border-radius: 9999px;
+            padding: .3rem .6rem;
+            font-size: .7rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .modal-meta-availability {
+            border-color: #16714f;
+            background: #e0f4e9;
+            color: #104d38;
+        }
+
+        .modal-meta-colors {
+            border-color: #71614b;
+            background: #f2eee7;
+            color: #393129;
+        }
+
+        .modal-meta-price {
+            border-color: #9a752b;
+            background: #fff0c9;
+            color: #573d08;
+        }
+
         .reveal-item {
             opacity: 1;
             transform: translateY(0);
@@ -2178,12 +2244,11 @@
             </div>
             <div id="modalImageStatus" class="hidden bg-black text-white/80 text-center text-xs py-2"></div>
             <div class="p-6 bg-white">
-                <div class="flex items-center gap-2 mb-2">
+                <div class="modal-badges">
                     <span id="modalCategory"
-                        class="text-[10px] uppercase font-bold tracking-widest bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded">Category</span>
+                        class="uppercase">Category</span>
                     <span id="modalBadge"
-                        class="text-[10px] uppercase font-bold tracking-widest bg-velvetWine text-softGold px-2.5 py-0.5 rounded">Royal
-                        Look</span>
+                        class="uppercase">Royal Look</span>
                 </div>
                 <h3 id="modalTitle" class="font-serif text-2xl font-bold text-deepCharcoal mb-2">Item Title</h3>
                 <div id="modalMeta" class="flex flex-wrap gap-2 mb-3"></div>
@@ -2913,9 +2978,9 @@
             document.getElementById('modalCategory').innerText = category;
             document.getElementById('modalBadge').innerText = badge || 'Royal Look';
             document.getElementById('modalMeta').innerHTML =
-                `<span class="rounded-full bg-emerald-50 text-emerald-700 px-2 py-1 text-[10px]">${availability}</span>
-                 <span class="rounded-full bg-stone-100 text-stone-700 px-2 py-1 text-[10px]">${colors}</span>
-                 ${priceLabel ? `<span class="rounded-full bg-amber-50 text-amber-800 px-2 py-1 text-[10px]">${priceLabel}</span>` : ''}`;
+                `<span class="modal-meta-tag modal-meta-availability">${availability}</span>
+                 <span class="modal-meta-tag modal-meta-colors">${colors}</span>
+                 ${priceLabel ? `<span class="modal-meta-tag modal-meta-price">${priceLabel}</span>` : ''}`;
             renderModalMedia();
 
             document.getElementById('modalWhatsAppBtn').onclick = () => {

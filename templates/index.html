@@ -2070,7 +2070,8 @@
                     onclick="openDetailModal(this)">
 
                     <div class="mobile-card-heading">
-                        <span>{{ item.category }}</span>
+                        <span
+                            {% if category_label_colors.get(item.category) %}style="color: {{ category_label_colors[item.category].background }};"{% endif %}>{{ item.category }}</span>
                         <h3>{{ item.title }}</h3>
                     </div>
                     <div class="relative bg-stone-900 overflow-hidden flex items-center justify-center skeleton-media">
@@ -2132,7 +2133,8 @@
                         </span>
                         {% endif %}
                         <span
-                            class="media-category-badge absolute bottom-3 left-3 bg-velvetWine/90 text-softGold text-[10px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wider">
+                            class="media-category-badge absolute bottom-3 left-3 bg-velvetWine/90 text-softGold text-[10px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wider"
+                            {% if category_label_colors.get(item.category) %}style="background-color: {{ category_label_colors[item.category].background }}; color: {{ category_label_colors[item.category].text }};"{% endif %}>
                             {{ item.category }}
                         </span>
                         {% if item.featured %}

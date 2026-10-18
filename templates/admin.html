@@ -835,6 +835,30 @@
                         Save Admin Label Colors
                     </button>
                 </form>
+                <form action="/api/admin/category-label-colors" method="POST"
+                    class="mt-5 border-t border-stone-200 pt-4" id="categoryLabelColorsForm">
+                    <h4 class="mb-1 text-sm font-bold text-stone-800">Individual Category Colors</h4>
+                    <p class="mb-3 text-xs text-stone-500">Set each category color separately. These colors also appear on the live product cards.</p>
+                    <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {% for category in category_color_categories %}
+                        {% set category_color = category_label_colors.get(category, {}).get('background', admin_label_colors.category) %}
+                        {% set category_text = category_label_colors.get(category, {}).get('text', admin_label_colors.category_text) %}
+                        <label class="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-2.5 text-xs font-semibold">
+                            <span class="admin-category-chip rounded-full px-2.5 py-1"
+                                style="background-color: {{ category_color }}; color: {{ category_text }};"
+                                data-category-color-preview>{{ category }}</span>
+                            <input type="hidden" name="category" value="{{ category }}">
+                            <input type="color" name="color" value="{{ category_color }}"
+                                class="h-8 w-12 cursor-pointer rounded border" aria-label="{{ category }} category color"
+                                data-category-color-input>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <button type="submit"
+                        class="mt-3 w-full rounded-lg bg-stone-900 px-4 py-2.5 text-xs font-bold text-amber-300 transition hover:bg-black">
+                        Save Individual Category Colors
+                    </button>
+                </form>
             </div>
 
             <!-- Site Logo -->
@@ -1062,7 +1086,8 @@
                                 item.type }}</span>
                             <h5 class="admin-product-title font-bold mt-1">{{ item.title }}</h5>
                             <div class="mt-1 flex flex-wrap gap-1.5">
-                                <span class="admin-category-chip rounded-full px-2 py-0.5 text-[10px] font-bold">{{ item.category }}</span>
+                                <span class="admin-category-chip rounded-full px-2 py-0.5 text-[10px] font-bold"
+                                    {% if category_label_colors.get(item.category) %}style="background-color: {{ category_label_colors[item.category].background }}; color: {{ category_label_colors[item.category].text }};"{% endif %}>{{ item.category }}</span>
                                 <span class="admin-badge-chip rounded-full px-2 py-0.5 text-[10px] font-bold">{{ item.badge|default('Royal Look') }}</span>
                             </div>
                             {% if item.images and item.images|length > 0 %}
@@ -1152,6 +1177,18 @@
         if (properties[1]) {
             document.body.style.setProperty(properties[1], luminance > 0.58 ? '#211A1D' : '#FFFAF0');
         }
+    });
+
+    document.querySelectorAll('[data-category-color-input]').forEach(input => {
+        input.addEventListener('input', () => {
+            const color = input.value.toUpperCase();
+            const channels = [1, 3, 5].map(index => parseInt(color.slice(index, index + 2), 16));
+            const luminance = (0.299 * channels[0] + 0.587 * channels[1] + 0.114 * channels[2]) / 255;
+            const preview = input.closest('label')?.querySelector('[data-category-color-preview]');
+            if (!preview) return;
+            preview.style.backgroundColor = color;
+            preview.style.color = luminance > 0.58 ? '#211A1D' : '#FFFAF0';
+        });
     });
 
     document.querySelectorAll('[data-homepage-upload-form]').forEach(form => {

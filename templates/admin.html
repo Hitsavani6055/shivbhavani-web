@@ -835,30 +835,43 @@
                         Save Admin Label Colors
                     </button>
                 </form>
-                <form action="/api/admin/category-label-colors" method="POST"
-                    class="mt-5 border-t border-stone-200 pt-4" id="categoryLabelColorsForm">
-                    <h4 class="mb-1 text-sm font-bold text-stone-800">Individual Category Colors</h4>
-                    <p class="mb-3 text-xs text-stone-500">Set each category color separately. These colors also appear on the live product cards.</p>
-                    <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                        {% for category in category_color_categories %}
-                        {% set category_color = category_label_colors.get(category, {}).get('background', admin_label_colors.category) %}
-                        {% set category_text = category_label_colors.get(category, {}).get('text', admin_label_colors.category_text) %}
-                        <label class="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-2.5 text-xs font-semibold">
-                            <span class="admin-category-chip rounded-full px-2.5 py-1"
-                                style="background-color: {{ category_color }}; color: {{ category_text }};"
-                                data-category-color-preview>{{ category }}</span>
-                            <input type="hidden" name="category" value="{{ category }}">
-                            <input type="color" name="color" value="{{ category_color }}"
-                                class="h-8 w-12 cursor-pointer rounded border" aria-label="{{ category }} category color"
-                                data-category-color-input>
-                        </label>
-                        {% endfor %}
-                    </div>
-                    <button type="submit"
-                        class="mt-3 w-full rounded-lg bg-stone-900 px-4 py-2.5 text-xs font-bold text-amber-300 transition hover:bg-black">
-                        Save Individual Category Colors
-                    </button>
-                </form>
+                <details class="group mt-5 border-t border-stone-200 pt-4">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-3 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600">
+                        <span>
+                            <span class="block text-sm font-bold text-stone-800">Individual Category Colors</span>
+                            <span class="mt-1 block text-xs text-stone-500">Set separate colors for {{ category_color_categories|length }} categories</span>
+                        </span>
+                        <span class="flex shrink-0 items-center gap-2">
+                            <span class="rounded-full bg-stone-100 px-3 py-1.5 text-[10px] font-bold text-stone-600 group-open:hidden">Expand</span>
+                            <span class="hidden rounded-full bg-stone-100 px-3 py-1.5 text-[10px] font-bold text-stone-600 group-open:inline">Minimize</span>
+                            <i class="fas fa-chevron-down text-xs text-stone-500 transition-transform group-open:rotate-180"
+                                aria-hidden="true"></i>
+                        </span>
+                    </summary>
+                    <form action="/api/admin/category-label-colors" method="POST"
+                        class="mt-4 border-t border-stone-100 pt-4" id="categoryLabelColorsForm">
+                        <p class="mb-3 text-xs text-stone-500">These colors also appear on the live product cards.</p>
+                        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                            {% for category in category_color_categories %}
+                            {% set category_color = category_label_colors.get(category, {}).get('background', admin_label_colors.category) %}
+                            {% set category_text = category_label_colors.get(category, {}).get('text', admin_label_colors.category_text) %}
+                            <label class="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-2.5 text-xs font-semibold">
+                                <span class="admin-category-chip rounded-full px-2.5 py-1"
+                                    style="background-color: {{ category_color }}; color: {{ category_text }};"
+                                    data-category-color-preview>{{ category }}</span>
+                                <input type="hidden" name="category" value="{{ category }}">
+                                <input type="color" name="color" value="{{ category_color }}"
+                                    class="h-8 w-12 cursor-pointer rounded border" aria-label="{{ category }} category color"
+                                    data-category-color-input>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <button type="submit"
+                            class="mt-3 w-full rounded-lg bg-stone-900 px-4 py-2.5 text-xs font-bold text-amber-300 transition hover:bg-black">
+                            Save Individual Category Colors
+                        </button>
+                    </form>
+                </details>
             </div>
 
             <!-- Site Logo -->

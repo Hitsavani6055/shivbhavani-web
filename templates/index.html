@@ -274,9 +274,20 @@
         }
 
         #splashScreen {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             isolation: isolate;
             overflow: hidden;
             background: #100b0b;
+            transition: opacity 700ms ease;
         }
 
         #splashScreen::before,
@@ -1899,10 +1910,10 @@
 
                     <div class="relative bg-stone-900 overflow-hidden flex items-center justify-center skeleton-media">
                         {% if item.type == 'video' %}
-                        <div class="reel-frame relative w-full overflow-hidden bg-black">
+                        <div class="reel-frame relative w-full overflow-hidden bg-[#211a1d]">
                             <video src="{{ item.url }}" controls playsinline preload="none"
                                 onclick="event.stopPropagation()"
-                                class="w-full h-full bg-black"></video>
+                                class="w-full h-full bg-[#211a1d]"></video>
                             <button type="button" data-reel-play aria-label="Play reel"
                                 class="absolute left-1/2 top-1/2 z-10 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-velvetWine/90 text-white shadow-xl backdrop-blur transition hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-softGold"
                                 onclick="event.stopPropagation()">
@@ -2932,6 +2943,34 @@
                 const playButton = frame?.querySelector('[data-reel-play]');
                 const playbackError = frame?.querySelector('[data-reel-play-error]');
 
+                const captureReelPoster = () => {
+                    if (vid.dataset.posterReady === 'true' || !vid.videoWidth || !vid.videoHeight) return;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.min(vid.videoWidth, 480);
+                    canvas.height = Math.round(canvas.width * vid.videoHeight / vid.videoWidth);
+                    const context = canvas.getContext('2d');
+                    if (!context) {
+                        console.error('Could not create a canvas for the reel preview.');
+                        return;
+                    }
+                    try {
+                        context.drawImage(vid, 0, 0, canvas.width, canvas.height);
+                        vid.poster = canvas.toDataURL('image/jpeg', 0.78);
+                        vid.dataset.posterReady = 'true';
+                    } catch (error) {
+                        console.error('Could not capture the reel preview frame.', error);
+                    }
+                };
+
+                vid.addEventListener('seeked', captureReelPoster, { once: true });
+                vid.addEventListener('loadedmetadata', () => {
+                    if (Number.isFinite(vid.duration) && vid.duration > 0) {
+                        vid.currentTime = Math.min(0.12, vid.duration / 2);
+                    } else if (vid.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                        captureReelPoster();
+                    }
+                }, { once: true });
+
                 playButton?.addEventListener('click', async event => {
                     event.stopPropagation();
                     if (vid.ended) vid.currentTime = 0;
@@ -2946,7 +2985,7 @@
                 });
 
                 vid.addEventListener('play', () => {
-                    if (playButton) playButton.hidden = true;
+                    playbackError?.classList.add('hidden');
                 });
                 vid.addEventListener('playing', () => {
                     if (playButton) playButton.hidden = true;
@@ -2968,6 +3007,10 @@
                 const videoObserver = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         const vid = entry.target;
+                        if (entry.isIntersecting && vid.preload === 'none') {
+                            vid.preload = 'metadata';
+                            vid.load();
+                        }
                         if (!entry.isIntersecting || entry.intersectionRatio < 0.35) {
                             if (!vid.paused) {
                                 vid.pause();

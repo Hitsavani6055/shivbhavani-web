@@ -220,8 +220,11 @@ def create_webp_variant(filepath: str) -> str | None:
             image = ImageOps.exif_transpose(source)
             has_alpha = "A" in image.getbands() or "transparency" in image.info
             image = image.convert("RGBA" if has_alpha else "RGB")
-            image.save(temporary_path, format="WEBP", quality=84, method=6)
-        if os.path.getsize(temporary_path) >= os.path.getsize(filepath):
+            original_size = image.size
+            image.thumbnail((1920, 1920), Image.Resampling.LANCZOS)
+            image.save(temporary_path, format="WEBP", quality=82, method=4)
+        dimensions_reduced = image.size != original_size
+        if not dimensions_reduced and os.path.getsize(temporary_path) >= os.path.getsize(filepath):
             os.remove(temporary_path)
             logger.info("Keeping original image because its WebP variant is not smaller: %s", filepath)
             return None
@@ -1108,9 +1111,6 @@ def save_homepage_photo_upload(file: UploadFile, config_path, title, filename_pr
     extension = os.path.splitext(file.filename or "")[1].lower()
     if extension not in {".jpg", ".jpeg", ".png", ".webp"}:
         raise HTTPException(status_code=400, detail="Homepage photo must be JPG, PNG, or WEBP.")
-    if not (file.content_type or "").startswith("image/"):
-        raise HTTPException(status_code=400, detail="Choose a valid image file.")
-
     signature = file.file.read(12)
     file.file.seek(0)
     valid_signature = (
@@ -1144,8 +1144,12 @@ async def admin_upload_hero_media(request: Request, file: UploadFile = File(...)
     if not is_admin_authenticated(request):
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    hero_url = save_homepage_photo_upload(
-        file, HERO_CONFIG_FILE, "Homepage Royal Photo", "hero"
+    hero_url = await asyncio.to_thread(
+        save_homepage_photo_upload,
+        file,
+        HERO_CONFIG_FILE,
+        "Homepage Royal Photo",
+        "hero"
     )
     append_history("hero photo upload", "Homepage Royal Photo", "image", "admin", hero_url)
     return RedirectResponse(url="/admin?hero=updated", status_code=status.HTTP_303_SEE_OTHER)
@@ -1172,7 +1176,8 @@ async def admin_upload_hero_companion_media(request: Request, file: UploadFile =
     if not is_admin_authenticated(request):
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    hero_url = save_homepage_photo_upload(
+    hero_url = await asyncio.to_thread(
+        save_homepage_photo_upload,
         file,
         HERO_COMPANION_CONFIG_FILE,
         "Homepage Companion Photo",

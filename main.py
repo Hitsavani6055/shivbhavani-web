@@ -308,6 +308,7 @@ COLLECTION_FILE = persistent_file("collection.json")
 HISTORY_FILE = persistent_file("admin_history.json")
 LOGO_CONFIG_FILE = persistent_file("logo_config.json")
 DESIGN_FILE = persistent_file("design.json")
+ADMIN_LABEL_COLORS_FILE = persistent_file("admin_label_colors.json")
 BUSINESS_FILE = persistent_file("business.json")
 CATEGORY_FILE = persistent_file("categories.json")
 HERO_CONFIG_FILE = persistent_file("hero_config.json")
@@ -321,6 +322,13 @@ DEFAULT_DESIGN = {
     "primary_color": "#5B0E1E",
     "accent_color": "#C5A059",
     "background_color": "#FBF8F1"
+}
+
+DEFAULT_ADMIN_LABEL_COLORS = {
+    "category": "#0F766E",
+    "badge": "#6D28D9",
+    "product_title": "#5B0E1E",
+    "branch": "#B45309"
 }
 
 DEFAULT_BUSINESS = {
@@ -684,6 +692,34 @@ def get_design():
         except Exception:
             pass
     return DEFAULT_DESIGN.copy()
+
+
+def contrast_text_color(color: str) -> str:
+    channels = [int(color[index:index + 2], 16) for index in (1, 3, 5)]
+    luminance = (0.299 * channels[0] + 0.587 * channels[1] + 0.114 * channels[2]) / 255
+    return "#211A1D" if luminance > 0.58 else "#FFFAF0"
+
+
+def get_admin_label_colors():
+    colors = DEFAULT_ADMIN_LABEL_COLORS.copy()
+    if os.path.exists(ADMIN_LABEL_COLORS_FILE):
+        try:
+            with open(ADMIN_LABEL_COLORS_FILE, "r", encoding="utf-8") as color_file:
+                saved_colors = json.load(color_file)
+            if not isinstance(saved_colors, dict):
+                raise ValueError("Admin label colors must be a JSON object.")
+            for key in colors:
+                value = saved_colors.get(key)
+                if isinstance(value, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", value):
+                    colors[key] = value.upper()
+        except (OSError, json.JSONDecodeError, ValueError):
+            logger.exception("Could not read Admin label colors from %s.", ADMIN_LABEL_COLORS_FILE)
+    return {
+        **colors,
+        "category_text": contrast_text_color(colors["category"]),
+        "badge_text": contrast_text_color(colors["badge"]),
+        "branch_text": contrast_text_color(colors["branch"])
+    }
 
 
 def get_business():
@@ -1060,6 +1096,12 @@ async def serve_admin(request: Request, error: str = ""):
     categories = get_categories() if is_authenticated else []
     logo_url = get_logo_url() if is_authenticated else DEFAULT_LOGO_URL
     design = get_design() if is_authenticated else DEFAULT_DESIGN.copy()
+    admin_label_colors = get_admin_label_colors() if is_authenticated else {
+        **DEFAULT_ADMIN_LABEL_COLORS,
+        "category_text": contrast_text_color(DEFAULT_ADMIN_LABEL_COLORS["category"]),
+        "badge_text": contrast_text_color(DEFAULT_ADMIN_LABEL_COLORS["badge"]),
+        "branch_text": contrast_text_color(DEFAULT_ADMIN_LABEL_COLORS["branch"])
+    }
     business = get_business() if is_authenticated else DEFAULT_BUSINESS.copy()
     return templates.TemplateResponse("admin.html", {
         "request": request,
@@ -1076,6 +1118,7 @@ async def serve_admin(request: Request, error: str = ""):
         "history": history,
         "logo_url": logo_url,
         "design": design,
+        "admin_label_colors": admin_label_colors,
         "business": business,
         "categories": categories,
         "error": error,
@@ -1365,6 +1408,47 @@ async def admin_update_design(
     with open(DESIGN_FILE, "w", encoding="utf-8") as f:
         json.dump(design, f, indent=4)
     append_history("design update", "Live website theme", "settings", "admin", "Primary, accent, and background colors updated")
+    return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@app.post("/api/admin/label-colors")
+async def admin_update_label_colors(
+    request: Request,
+    category_color: str = Form(...),
+    badge_color: str = Form(...),
+    product_title_color: str = Form(...),
+    branch_color: str = Form(...)
+):
+    if not is_admin_authenticated(request):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    colors = {
+        "category": category_color.upper(),
+        "badge": badge_color.upper(),
+        "product_title": product_title_color.upper(),
+        "branch": branch_color.upper()
+    }
+    if not all(re.fullmatch(r"#[0-9A-F]{6}", value) for value in colors.values()):
+        raise HTTPException(status_code=400, detail="Colors must use six-digit HEX values")
+
+    temporary_path = f"{ADMIN_LABEL_COLORS_FILE}.{uuid.uuid4().hex}.tmp"
+    try:
+        with open(temporary_path, "w", encoding="utf-8") as color_file:
+            json.dump(colors, color_file, indent=4)
+        os.replace(temporary_path, ADMIN_LABEL_COLORS_FILE)
+    except OSError as error:
+        if os.path.exists(temporary_path):
+            os.remove(temporary_path)
+        logger.exception("Could not save Admin label colors.")
+        raise HTTPException(status_code=500, detail="Could not save Admin label colors.") from error
+
+    append_history(
+        "admin label colors update",
+        "Admin labels",
+        "settings",
+        "admin",
+        "Category, badge, product title, and branch colors updated"
+    )
     return RedirectResponse(url="/admin", status_code=status.HTTP_303_SEE_OTHER)
 
 

@@ -9,7 +9,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 
-<body class="admin-shell bg-stone-100 text-stone-800 font-sans min-h-screen">
+<body class="admin-shell bg-stone-100 text-stone-800 font-sans min-h-screen"
+    style="--admin-category-color: {{ admin_label_colors.category }}; --admin-category-text: {{ admin_label_colors.category_text }}; --admin-badge-color: {{ admin_label_colors.badge }}; --admin-badge-text: {{ admin_label_colors.badge_text }}; --admin-product-title-color: {{ admin_label_colors.product_title }}; --admin-branch-color: {{ admin_label_colors.branch }}; --admin-branch-text: {{ admin_label_colors.branch_text }};">
     <style>
         :root {
             --admin-wine: #5b0e1e;
@@ -59,6 +60,35 @@
         .admin-card [class~="border-stone-100"],
         .admin-card [class~="border-stone-200"] {
             border-color: rgba(216, 182, 106, .2) !important;
+        }
+        .admin-category-chip {
+            background-color: var(--admin-category-color);
+            color: var(--admin-category-text);
+        }
+        .admin-badge-chip {
+            background-color: var(--admin-badge-color);
+            color: var(--admin-badge-text);
+        }
+        .admin-card .admin-product-title {
+            color: var(--admin-product-title-color) !important;
+        }
+        .admin-branch-chip {
+            display: inline-flex;
+            max-width: 100%;
+            align-items: center;
+            border: 1px solid rgba(0, 0, 0, .12);
+            border-radius: 9999px;
+            background-color: var(--admin-branch-color);
+            color: var(--admin-branch-text);
+            padding: .2rem .55rem;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.3;
+            overflow-wrap: anywhere;
+        }
+        .admin-branch-input {
+            color: var(--admin-branch-color);
+            font-weight: 700;
         }
         .admin-input {
             border-color: #e7ded2;
@@ -526,7 +556,7 @@
                                 </label>
                             </div>
                             <label class="block text-xs font-semibold text-stone-700">Branch
-                                <input name="branch" value="Bhavnagar (Main Branch)" placeholder="Branch or showroom" class="admin-input mt-1 w-full border rounded-lg p-2.5 text-xs">
+                                <input name="branch" value="Bhavnagar (Main Branch)" placeholder="Branch or showroom" class="admin-input admin-branch-input mt-1 w-full border rounded-lg p-2.5 text-xs">
                             </label>
                         </fieldset>
                         <fieldset class="space-y-3 border-t border-stone-100 pt-4">
@@ -768,6 +798,45 @@
                 </form>
             </div>
 
+            <div class="admin-card order-7 lg:order-7 lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 class="font-bold text-base text-stone-900 mb-2 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-swatchbook text-amber-600" aria-hidden="true"></i> Admin Label Colors
+                </h3>
+                <p class="text-xs text-stone-500 mb-4">Choose separate colors for categories, Royal Look badges, product names, and branches. Text contrast adjusts automatically.</p>
+                <form action="/api/admin/label-colors" method="POST" class="grid gap-3 sm:grid-cols-2">
+                    <label class="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-3 text-xs font-semibold">
+                        <span>Category · Talwar &amp; Accessories</span>
+                        <input type="color" name="category_color" value="{{ admin_label_colors.category }}"
+                            class="h-9 w-14 cursor-pointer rounded border" aria-label="Category label color">
+                    </label>
+                    <label class="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-3 text-xs font-semibold">
+                        <span>Badge · Royal Look</span>
+                        <input type="color" name="badge_color" value="{{ admin_label_colors.badge }}"
+                            class="h-9 w-14 cursor-pointer rounded border" aria-label="Royal Look badge color">
+                    </label>
+                    <label class="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-3 text-xs font-semibold">
+                        <span>Product name · talwar</span>
+                        <input type="color" name="product_title_color" value="{{ admin_label_colors.product_title }}"
+                            class="h-9 w-14 cursor-pointer rounded border" aria-label="Product name color">
+                    </label>
+                    <label class="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-3 text-xs font-semibold">
+                        <span>Branch · Main Branch</span>
+                        <input type="color" name="branch_color" value="{{ admin_label_colors.branch }}"
+                            class="h-9 w-14 cursor-pointer rounded border" aria-label="Branch label color">
+                    </label>
+                    <div class="flex flex-wrap items-center gap-2 sm:col-span-2" aria-label="Label color preview">
+                        <span class="admin-category-chip rounded-full px-2.5 py-1 text-[10px] font-bold">Talwar &amp; Accessories</span>
+                        <span class="admin-badge-chip rounded-full px-2.5 py-1 text-[10px] font-bold">Royal Look</span>
+                        <span class="admin-product-title text-xs font-bold">talwar</span>
+                        <span class="admin-branch-chip">Main Branch</span>
+                    </div>
+                    <button type="submit"
+                        class="rounded-lg bg-stone-900 px-4 py-2.5 text-xs font-bold text-amber-300 transition hover:bg-black sm:col-span-2">
+                        Save Admin Label Colors
+                    </button>
+                </form>
+            </div>
+
             <!-- Site Logo -->
             <div class="admin-card order-4 lg:order-4 lg:col-span-3 bg-white p-6 rounded-2xl shadow-sm border">
                 <h3 class="font-bold text-base text-stone-900 mb-4 pb-2 border-b flex items-center gap-2">
@@ -834,7 +903,7 @@
                             <tr>
                                 <td class="p-2 font-bold text-velvetWine">{{ order.id }}</td>
                                 <td class="p-2"><div class="font-semibold">{{ order.customer_name }}</div><a class="text-green-700" href="https://wa.me/{{ order.phone }}" target="_blank">{{ order.phone }}</a></td>
-                                <td class="p-2">{{ order.event_date or 'Not set' }}<br><span class="text-stone-400">{{ order.event_type }}</span></td>
+                                <td class="p-2">{{ order.event_date or 'Not set' }}<br><span class="text-stone-400">{{ order.event_type }}</span><br><span class="admin-branch-chip mt-1">{{ order.branch|default('Main Branch') }}</span></td>
                                 <td class="p-2">₹{{ '%.2f'|format(order.total_amount|float) }}<br><span class="text-stone-400">Bal: ₹{{ '%.2f'|format(order.balance_amount|float) }}</span></td>
                                 <td class="p-2">
                                     <form method="post" action="/api/admin/orders/{{ order.id }}/status">
@@ -898,7 +967,7 @@
                                         {{ inq.phone }}
                                     </a>
                                 </td>
-                                <td class="p-2">{{ inq.branch }}</td>
+                                <td class="p-2"><span class="admin-branch-chip">{{ inq.branch }}</span></td>
                                 <td class="p-2">{{ inq.service_type }}</td>
                                 <td class="p-2">
                                     <div class="flex items-center gap-1">
@@ -991,8 +1060,11 @@
                             <span
                                 class="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold uppercase">{{
                                 item.type }}</span>
-                            <h5 class="font-bold text-stone-800 mt-1">{{ item.title }}</h5>
-                            <span class="text-[11px] text-stone-500">{{ item.category }}</span>
+                            <h5 class="admin-product-title font-bold mt-1">{{ item.title }}</h5>
+                            <div class="mt-1 flex flex-wrap gap-1.5">
+                                <span class="admin-category-chip rounded-full px-2 py-0.5 text-[10px] font-bold">{{ item.category }}</span>
+                                <span class="admin-badge-chip rounded-full px-2 py-0.5 text-[10px] font-bold">{{ item.badge|default('Royal Look') }}</span>
+                            </div>
                             {% if item.images and item.images|length > 0 %}
                             <div class="catalog-thumb-strip" aria-label="Gallery photos">
                                 {% for image in item.images %}
@@ -1061,6 +1133,27 @@
 </body>
 
 <script>
+    const adminLabelColorsForm = document.querySelector('form[action="/api/admin/label-colors"]');
+    adminLabelColorsForm?.addEventListener('input', event => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== 'color') return;
+        const color = input.value.toUpperCase();
+        const channels = [1, 3, 5].map(index => parseInt(color.slice(index, index + 2), 16));
+        const luminance = (0.299 * channels[0] + 0.587 * channels[1] + 0.114 * channels[2]) / 255;
+        const propertyMap = {
+            category_color: ['--admin-category-color', '--admin-category-text'],
+            badge_color: ['--admin-badge-color', '--admin-badge-text'],
+            product_title_color: ['--admin-product-title-color'],
+            branch_color: ['--admin-branch-color', '--admin-branch-text']
+        };
+        const properties = propertyMap[input.name];
+        if (!properties) return;
+        document.body.style.setProperty(properties[0], color);
+        if (properties[1]) {
+            document.body.style.setProperty(properties[1], luminance > 0.58 ? '#211A1D' : '#FFFAF0');
+        }
+    });
+
     document.querySelectorAll('[data-homepage-upload-form]').forEach(form => {
         form.addEventListener('submit', event => {
             event.preventDefault();
